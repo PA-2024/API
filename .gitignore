@@ -1,0 +1,40 @@
+# =========================
+# BDD
+# =========================
+appsettings*.json
+
+
+# =========================
+# Bin & obj
+# =========================
+bin/
+obj/
+
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+.vscode/
+*.opendb
+*.openproj
+*.dbmdl
+*.dbproj.schemaview
+*.pfx
+*.publishsettings
+*.user
+*.vspscc
+*_i.c
+*_p.c
+*_h.h
+*_resh.h
+*.ncb
+*.sdf
+*.mdf
+*.ldf
+*.dbmdl
+*.dbproj.schemaview
+
+
+
+
