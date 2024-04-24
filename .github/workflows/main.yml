@@ -3,36 +3,16 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '8.0.0' 
-
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Build
-      run: dotnet build --no-restore
-
-    - name: Publish
-      run: dotnet publish --no-restore --configuration Release --output ${{github.workspace}}/build
-
-    - name: Deploy to Heroku
-      uses: akhileshns/heroku-deploy@v3.12.12 
-      with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        usedocker: true
-        docker_build_args: "--no-cache"
-        dockerfile_directory: ${{github.workspace}}/build
-
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          usedocker: true
