@@ -3,7 +3,7 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  # Set this to your default branch
+      - main  
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.x'  # Modify according to your .NET version
+        dotnet-version: '8.0.0' 
 
     - name: Restore dependencies
       run: dotnet restore
@@ -27,7 +27,7 @@ jobs:
       run: dotnet publish --no-restore --configuration Release --output ${{github.workspace}}/build
 
     - name: Deploy to Heroku
-      uses: akhileshns/heroku-deploy@v3.12.12  # Check for the latest version
+      uses: akhileshns/heroku-deploy@v3.12.12 
       with:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
         heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
