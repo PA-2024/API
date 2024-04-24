@@ -1,0 +1,38 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - main  # Set this to your default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'  # Modify according to your .NET version
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Publish
+      run: dotnet publish --no-restore --configuration Release --output ${{github.workspace}}/build
+
+    - name: Deploy to Heroku
+      uses: akhileshns/heroku-deploy@v3.12.12  # Check for the latest version
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+        heroku_email: ${{ secrets.HEROKU_EMAIL }}
+        usedocker: true
+        docker_build_args: "--no-cache"
+        dockerfile_directory: ${{github.workspace}}/build
+
