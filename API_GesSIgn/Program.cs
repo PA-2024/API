@@ -1,15 +1,13 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Ajoutez services au conteneur.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurer le pipeline de requêtes HTTP.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,9 +15,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
-app.Run();
+// Utiliser le port de la variable d'environnement sur Heroku
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Utiliser 8080 si aucun port n'est défini
+app.Run("http://*:" + port);
