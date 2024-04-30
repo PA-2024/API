@@ -9,6 +9,5 @@
 
         public required string Class_Name { get; set; }
 
-        public List<Student>? Class_Students { get; set; }
     }
 }

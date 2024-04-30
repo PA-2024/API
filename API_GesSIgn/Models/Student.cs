@@ -14,6 +14,11 @@
 
         public required User Student_User { get; set; }
 
+        /// <summary>
+        /// Classe de l'etudiant
+        /// </summary>
         public required Sectors Student_sectors { get; set; }
+
+
     }
 }

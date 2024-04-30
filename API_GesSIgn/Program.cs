@@ -18,6 +18,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Utiliser le port de la variable d'environnement sur Heroku
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Utiliser 8080 si aucun port n'est défini
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080"; // Utilise 8080 si aucun port n'est défini
 app.Run("http://*:" + port);
