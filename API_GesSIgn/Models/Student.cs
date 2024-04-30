@@ -13,5 +13,7 @@
         public int Student_LastName { get; set; }
 
         public required User Student_User { get; set; }
+
+        public required Sectors Student_sectors { get; set; }
     }
 }

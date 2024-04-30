@@ -1,6 +1,9 @@
 ﻿namespace API_GesSIgn.Models
 {
-    public class Class
+    /// <summary>
+    /// Classe des étudients 
+    /// </summary>
+    public class Sectors
     {
         public int Class_Id { get; set; }
 
