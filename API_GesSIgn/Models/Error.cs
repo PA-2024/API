@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace API_GesSIgn.Models
@@ -14,5 +15,11 @@ namespace API_GesSIgn.Models
 
         [Required]
         public DateTime Error_DateTime {get; set;}
+
+        public string? Error_Description { get; set; }
+
+        [Required]
+        [DefaultValue(false)]
+        public bool Error_Solved { get; set; }
     }
 }

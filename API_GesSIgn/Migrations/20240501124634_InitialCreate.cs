@@ -104,32 +104,6 @@ namespace API_GesSIgn.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Presences",
-                columns: table => new
-                {
-                    Presence_Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Presence_UserUser_Id = table.Column<int>(type: "int", nullable: false),
-                    Presence_SubjectsHourUser_Id = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Presences", x => x.Presence_Id);
-                    table.ForeignKey(
-                        name: "FK_Presences_Users_Presence_SubjectsHourUser_Id",
-                        column: x => x.Presence_SubjectsHourUser_Id,
-                        principalTable: "Users",
-                        principalColumn: "User_Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Presences_Users_Presence_UserUser_Id",
-                        column: x => x.Presence_UserUser_Id,
-                        principalTable: "Users",
-                        principalColumn: "User_Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "QCMs",
                 columns: table => new
                 {
@@ -203,10 +177,36 @@ namespace API_GesSIgn.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Presences",
+                columns: table => new
+                {
+                    Presence_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Presence_UserUser_Id = table.Column<int>(type: "int", nullable: false),
+                    Presence_SubjectsHourSubjectsHour_Id = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Presences", x => x.Presence_Id);
+                    table.ForeignKey(
+                        name: "FK_Presences_SubjectsHour_Presence_SubjectsHourSubjectsHour_Id",
+                        column: x => x.Presence_SubjectsHourSubjectsHour_Id,
+                        principalTable: "SubjectsHour",
+                        principalColumn: "SubjectsHour_Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Presences_Users_Presence_UserUser_Id",
+                        column: x => x.Presence_UserUser_Id,
+                        principalTable: "Users",
+                        principalColumn: "User_Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_Presences_Presence_SubjectsHourUser_Id",
+                name: "IX_Presences_Presence_SubjectsHourSubjectsHour_Id",
                 table: "Presences",
-                column: "Presence_SubjectsHourUser_Id");
+                column: "Presence_SubjectsHourSubjectsHour_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Presences_Presence_UserUser_Id",

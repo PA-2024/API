@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_GesSIgn.Migrations
 {
     [DbContext(typeof(MonDbContext))]
-    [Migration("20240501105552_InitialCreate")]
+    [Migration("20240501124634_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -76,7 +76,7 @@ namespace API_GesSIgn.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Presence_Id"));
 
-                    b.Property<int>("Presence_SubjectsHourUser_Id")
+                    b.Property<int>("Presence_SubjectsHourSubjectsHour_Id")
                         .HasColumnType("int");
 
                     b.Property<int>("Presence_UserUser_Id")
@@ -84,7 +84,7 @@ namespace API_GesSIgn.Migrations
 
                     b.HasKey("Presence_Id");
 
-                    b.HasIndex("Presence_SubjectsHourUser_Id");
+                    b.HasIndex("Presence_SubjectsHourSubjectsHour_Id");
 
                     b.HasIndex("Presence_UserUser_Id");
 
@@ -253,9 +253,9 @@ namespace API_GesSIgn.Migrations
 
             modelBuilder.Entity("API_GesSIgn.Models.Presence", b =>
                 {
-                    b.HasOne("API_GesSIgn.Models.User", "Presence_SubjectsHour")
+                    b.HasOne("API_GesSIgn.Models.SubjectsHour", "Presence_SubjectsHour")
                         .WithMany()
-                        .HasForeignKey("Presence_SubjectsHourUser_Id")
+                        .HasForeignKey("Presence_SubjectsHourSubjectsHour_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

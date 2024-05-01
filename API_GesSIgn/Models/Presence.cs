@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace API_GesSIgn.Models
 {
     /// <summary>
-    /// différent batiment de l'école  
+    /// Model de prescence de l'eleve   
     /// </summary>
     public class Presence
     {
@@ -14,7 +14,7 @@ namespace API_GesSIgn.Models
         public User Presence_User { get; set; }
 
         [Required]
-        public User Presence_SubjectsHour { get; set; }
+        public SubjectsHour Presence_SubjectsHour { get; set; }
 
     }
 }

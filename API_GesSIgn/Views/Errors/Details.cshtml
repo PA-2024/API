@@ -1,0 +1,42 @@
+﻿@model API_GesSIgn.Models.Error
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Error</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Error_Funtion)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Error_Funtion)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Error_DateTime)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Error_DateTime)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Error_Description)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Error_Description)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Error_Solved)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Error_Solved)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Error_id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
