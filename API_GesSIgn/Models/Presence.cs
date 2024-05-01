@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API_GesSIgn.Models
 {
     /// <summary>
@@ -5,11 +7,14 @@ namespace API_GesSIgn.Models
     /// </summary>
     public class Presence
     {
-        public required int Presence_Id { get; set; }
+        [Key]
+        public int Presence_Id { get; set; }
 
-        public required User Presence_User { get; set; }
+        [Required]
+        public User Presence_User { get; set; }
 
-        public required User Presence_SubjectsHour { get; set; }
+        [Required]
+        public User Presence_SubjectsHour { get; set; }
 
     }
 }

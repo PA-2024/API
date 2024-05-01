@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API_GesSIgn.Models
 {
     /// <summary>
@@ -5,10 +7,12 @@ namespace API_GesSIgn.Models
     /// </summary>
     public class Error 
     {
-        public required int Error_id {get; set;}
+        [Key]
+        public int Error_id {get; set;}
 
         public string? Error_Funtion {get; set;}
 
-        public required DateTime Error_DateTime {get; set;}
+        [Required]
+        public DateTime Error_DateTime {get; set;}
     }
 }

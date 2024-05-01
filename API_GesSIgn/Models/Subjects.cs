@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API_GesSIgn.Models
 {
     /// <summary>
@@ -5,10 +7,13 @@ namespace API_GesSIgn.Models
     /// </summary>
     public class Subjects
     {
+        [Key]
         public required int Subjects_Id { get; set; }
 
-        public required User Subjects_User { get; set; }
+        [Required]
+        public  User Subjects_User { get; set; }
 
+        [Required]
         public required Sectors Subjects_Sectors { get; set; }  
       
     }

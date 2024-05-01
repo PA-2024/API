@@ -1,13 +1,17 @@
-﻿namespace API_GesSIgn.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace API_GesSIgn.Models
 {
     /// <summary>
     /// Classe des étudients 
     /// </summary>
     public class Sectors
     {
-        public int Class_Id { get; set; }
+        [Key]
+        public int Sectors_Id { get; set; }
 
-        public required string Class_Name { get; set; }
+        [Required]
+        public string Sectors_Name { get; set; }
 
     }
 }

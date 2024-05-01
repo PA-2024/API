@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices.Marshalling;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace API_GesSIgn.Models
 {
@@ -7,13 +8,16 @@ namespace API_GesSIgn.Models
     /// </summary>
     public class School
     {
-        public required int School_Id { get; set; }
+        [Key]
+        public  int School_Id { get; set; }
 
-        public required string School_Name { get; set; }
+        [Required]
+        public string School_Name { get; set; }
 
         public string? School_token { get; set; }
 
-        public required bool School_allowSite { get; set; }
+        [Required]
+        public bool School_allowSite { get; set; }
 
     }
 }

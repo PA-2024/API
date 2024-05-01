@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API_GesSIgn.Models
 {
     /// <summary>
@@ -5,8 +7,13 @@ namespace API_GesSIgn.Models
     /// </summary>
     public class QCM 
     {
-        public required User QCM_Teacher {get; set;}
+        [Key]
+        public int QCM_Id { get; set;}
 
-        public required bool QCM_Done {get; set;}
+        [Required]
+        public User QCM_Teacher {get; set;}
+
+        [Required]
+        public bool QCM_Done {get; set;}
     }
 }

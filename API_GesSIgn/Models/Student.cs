@@ -1,4 +1,6 @@
-﻿namespace API_GesSIgn.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace API_GesSIgn.Models
 {
     /// <summary>
     /// Class des étudiant d'une école
@@ -6,18 +8,23 @@
     /// </summary>
     public class Student
     {
+        [Key]
         public int Student_Id { get; set; }
 
-        public int Student_FirstName { get; set; }
+        [Required]
+        public string Student_FirstName { get; set; }
 
-        public int Student_LastName { get; set; }
+        [Required]
+        public string Student_LastName { get; set; }
 
-        public required User Student_User { get; set; }
+        [Required]
+        public  User Student_User { get; set; }
 
         /// <summary>
         /// Classe de l'etudiant
         /// </summary>
-        public required Sectors Student_sectors { get; set; }
+        [Required]
+        public Sectors Student_sectors { get; set; }
 
 
     }
