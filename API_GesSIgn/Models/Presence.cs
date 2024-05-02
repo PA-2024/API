@@ -16,5 +16,8 @@ namespace API_GesSIgn.Models
         [Required]
         public SubjectsHour Presence_SubjectsHour { get; set; }
 
+
+        public Guid Prescence_Guid { get; set; }
+
     }
 }
