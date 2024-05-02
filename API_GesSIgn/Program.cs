@@ -24,12 +24,12 @@ builder.Services.AddDbContext<MonDbContext>(options =>
 
 var app = builder.Build();
 
-// Configurer le pipeline de requêtes HTTP.
-if (app.Environment.IsDevelopment())
-{
+// Configurer le pipeline de requêtes HTTP. a changer par la suite //TODO
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
