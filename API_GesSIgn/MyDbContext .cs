@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 public class MonDbContext : DbContext
 {
+    public MonDbContext(DbContextOptions<MonDbContext> options) : base(options)
+    {
+    }
+
     public DbSet<School> Ecoles { get; set; }
     
     public DbSet<Sectors> Classes { get; set; }
