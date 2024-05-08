@@ -10,6 +10,9 @@ namespace API_GesSIgn.Models
         [Key]
         public required int Subjects_Id { get; set; }
 
+        /// <summary>
+        /// Professeur de la matière
+        /// </summary>
         [Required]
         public  User Subjects_User { get; set; }
 

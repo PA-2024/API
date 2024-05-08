@@ -7,7 +7,7 @@ namespace API_GesSIgn.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class SchoolController : Controller
+    public class SchoolController : ControllerBase
     {
         private readonly MonDbContext _context;
 
@@ -20,7 +20,8 @@ namespace API_GesSIgn.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Schools.ToListAsync());
+            var schools = await _context.Schools.ToListAsync();
+            return Ok(schools); // Returns JSON list of schools
         }
 
         // GET: School/Details/5
@@ -39,30 +40,29 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return View(school);
+            return Ok(school); // Returns JSON object of a single school
         }
 
         // POST: School/Create
         [HttpPost]
-        public async Task<IActionResult> Create([Bind("School_Id,School_Name,School_token,School_allowSite")] School school)
+        public async Task<IActionResult> Create([FromBody] School school)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(school);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return CreatedAtAction(nameof(Details), new { id = school.School_Id }, school); // Return a 201 status code
             }
-            return View(school);
+            return BadRequest(ModelState); // Return 400 status code with ModelState
         }
-
 
         // POST: School/Edit/5
         [HttpPost("{id}")]
-        public async Task<IActionResult> Edit(int id, [Bind("School_Id,School_Name,School_token,School_allowSite")] School school)
+        public async Task<IActionResult> Edit(int id, [FromBody] School school)
         {
             if (id != school.School_Id)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             if (ModelState.IsValid)
@@ -71,6 +71,7 @@ namespace API_GesSIgn.Controllers
                 {
                     _context.Update(school);
                     await _context.SaveChangesAsync();
+                    return Ok(school);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -83,12 +84,11 @@ namespace API_GesSIgn.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(school);
+            return BadRequest(ModelState);
         }
 
-        // GET: School/Delete/5
+        // DELETE: School/Delete/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -104,8 +104,11 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return View(school);
+            _context.Schools.Remove(school);
+            await _context.SaveChangesAsync();
+            return NoContent(); // Successful response with no content
         }
+
         private bool SchoolExists(int id)
         {
             return _context.Schools.Any(e => e.School_Id == id);
