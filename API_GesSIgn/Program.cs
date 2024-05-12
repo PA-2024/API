@@ -1,8 +1,13 @@
+using API_GesSIgn.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Ajoutez services au conteneur.
+
+builder.Services.AddIdentity<User, IdentityRole>(); // je ne suis pas sur de cette ligne
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

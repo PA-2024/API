@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_GesSIgn.Migrations
 {
     [DbContext(typeof(MonDbContext))]
-    partial class MonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240510140350_update-5-10")]
+    partial class update510
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,12 +173,7 @@ namespace API_GesSIgn.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Sectors_SchoolSchool_Id")
-                        .HasColumnType("int");
-
                     b.HasKey("Sectors_Id");
-
-                    b.HasIndex("Sectors_SchoolSchool_Id");
 
                     b.ToTable("Sectors");
                 });
@@ -266,51 +264,6 @@ namespace API_GesSIgn.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("User_Id"));
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("User_RoleRoles_Id")
                         .HasColumnType("int");
 
@@ -357,17 +310,6 @@ namespace API_GesSIgn.Migrations
                         .IsRequired();
 
                     b.Navigation("QCM_Teacher");
-                });
-
-            modelBuilder.Entity("API_GesSIgn.Models.Sectors", b =>
-                {
-                    b.HasOne("API_GesSIgn.Models.School", "Sectors_School")
-                        .WithMany()
-                        .HasForeignKey("Sectors_SchoolSchool_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Sectors_School");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Student", b =>

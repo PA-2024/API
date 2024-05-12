@@ -19,5 +19,9 @@ namespace API_GesSIgn.Models
         [Required]
         public string Sectors_Name { get; set; }
 
+        [Required]
+        public School Sectors_School { get; set; }
+
+
     }
 }

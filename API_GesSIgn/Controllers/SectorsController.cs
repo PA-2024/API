@@ -20,7 +20,7 @@ namespace API_GesSIgn.Controllers
         public async Task<IActionResult> GetAllSectors()
         {
             var sectors = await _context.Sectors.ToListAsync();
-            return Ok(sectors); // Returns JSON list of sectors
+            return Ok(sectors); 
         }
 
         // GET: Sectors/Details/5

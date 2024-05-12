@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class MonDbContext : DbContext
 {
+    // a delete lors de l'ajout d'une table 
     public MonDbContext(DbContextOptions<MonDbContext> options) : base(options)
     {
     }
@@ -30,6 +31,8 @@ public class MonDbContext : DbContext
     public DbSet<SubjectsHour> SubjectsHour { get; set; }
 
     public DbSet<User> Users { get; set; }
+
+    public DbSet<Roles> Roles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

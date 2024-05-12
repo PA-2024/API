@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace API_GesSIgn.Models
 {
     /// <summary>
     /// Class pour les utilisateurs S
     /// </summary>
-    public class User
+    public class User : IdentityUser
     {
         [Key]
         public  int User_Id { get; set; }
@@ -15,5 +16,8 @@ namespace API_GesSIgn.Models
 
         [Required]
         public string User_password { get; set; }
+
+        [Required]
+        public Roles User_Role { get; set; }
     }
 }
