@@ -19,5 +19,8 @@ namespace API_GesSIgn.Models
         [Required]
         public bool School_allowSite { get; set; }
 
+        [Required]
+        public DateTime School_Date { get; set; }
+
     }
 }
