@@ -20,5 +20,8 @@ namespace API_GesSIgn.Models
         [Required]
         public string Bulding_Adress {get; set;}
 
+        [Required]
+        public School School { get; set;}
+
     }
 }

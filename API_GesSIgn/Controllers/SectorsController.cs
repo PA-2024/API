@@ -34,7 +34,7 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return Ok(sector); // Returns JSON object of a single sector
+            return Ok(sector); 
         }
 
         // POST: Sectors/Create
@@ -83,7 +83,7 @@ namespace API_GesSIgn.Controllers
                 }
             }
 
-            return NoContent(); // Successfully updated with no content return
+            return NoContent();
         }
 
         // DELETE: Sectors/Delete/5
@@ -98,7 +98,7 @@ namespace API_GesSIgn.Controllers
 
             _context.Sectors.Remove(sector);
             await _context.SaveChangesAsync();
-            return NoContent(); // Successful response with no content
+            return NoContent(); 
         }
 
         private bool SectorExists(int id)
