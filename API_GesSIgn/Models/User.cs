@@ -19,5 +19,10 @@ namespace API_GesSIgn.Models
 
         [Required]
         public Roles User_Role { get; set; }
+
+        /// <summary>
+        /// School de l'utilisateur
+        /// </summary>
+        public School? User_School { get; set; }
     }
 }

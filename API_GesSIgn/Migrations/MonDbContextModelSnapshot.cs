@@ -322,6 +322,9 @@ namespace API_GesSIgn.Migrations
                     b.Property<int>("User_RoleRoles_Id")
                         .HasColumnType("int");
 
+                    b.Property<int?>("User_SchoolSchool_Id")
+                        .HasColumnType("int");
+
                     b.Property<string>("User_email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -333,6 +336,8 @@ namespace API_GesSIgn.Migrations
                     b.HasKey("User_Id");
 
                     b.HasIndex("User_RoleRoles_Id");
+
+                    b.HasIndex("User_SchoolSchool_Id");
 
                     b.ToTable("Users");
                 });
@@ -446,7 +451,13 @@ namespace API_GesSIgn.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("API_GesSIgn.Models.School", "User_School")
+                        .WithMany()
+                        .HasForeignKey("User_SchoolSchool_Id");
+
                     b.Navigation("User_Role");
+
+                    b.Navigation("User_School");
                 });
 #pragma warning restore 612, 618
         }

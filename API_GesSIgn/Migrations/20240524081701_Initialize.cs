@@ -5,7 +5,7 @@
 namespace API_GesSIgn.Migrations
 {
     /// <inheritdoc />
-    public partial class updatev2510 : Migration
+    public partial class Initialize : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

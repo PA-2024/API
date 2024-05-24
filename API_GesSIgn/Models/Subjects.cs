@@ -16,6 +16,7 @@ namespace API_GesSIgn.Models
         [Required]
         public  User Subjects_User { get; set; }
 
+
         [Required]
         public required Sectors Subjects_Sectors { get; set; }  
       

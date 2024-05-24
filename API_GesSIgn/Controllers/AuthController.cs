@@ -22,6 +22,8 @@ namespace API_GesSIgn.Controllers
         }
 
         /// <summary>
+        /// 
+        /// 
         /// Méthode pour l'enregistrement des utilisateurs
         /// </summary>
         /// <param name="registerUser"></param>

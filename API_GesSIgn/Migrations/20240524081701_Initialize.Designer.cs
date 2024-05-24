@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_GesSIgn.Migrations
 {
     [DbContext(typeof(MonDbContext))]
-    [Migration("20240512225117_5-13v2")]
-    partial class _513v2
+    [Migration("20240524081701_Initialize")]
+    partial class Initialize
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,7 +44,12 @@ namespace API_GesSIgn.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("School_Id")
+                        .HasColumnType("int");
+
                     b.HasKey("Bulding_Id");
+
+                    b.HasIndex("School_Id");
 
                     b.ToTable("Buildings");
                 });
@@ -320,6 +325,9 @@ namespace API_GesSIgn.Migrations
                     b.Property<int>("User_RoleRoles_Id")
                         .HasColumnType("int");
 
+                    b.Property<int?>("User_SchoolSchool_Id")
+                        .HasColumnType("int");
+
                     b.Property<string>("User_email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -332,7 +340,20 @@ namespace API_GesSIgn.Migrations
 
                     b.HasIndex("User_RoleRoles_Id");
 
+                    b.HasIndex("User_SchoolSchool_Id");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("API_GesSIgn.Models.Building", b =>
+                {
+                    b.HasOne("API_GesSIgn.Models.School", "School")
+                        .WithMany()
+                        .HasForeignKey("School_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("School");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Presence", b =>
@@ -433,7 +454,13 @@ namespace API_GesSIgn.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("API_GesSIgn.Models.School", "User_School")
+                        .WithMany()
+                        .HasForeignKey("User_SchoolSchool_Id");
+
                     b.Navigation("User_Role");
+
+                    b.Navigation("User_School");
                 });
 #pragma warning restore 612, 618
         }
