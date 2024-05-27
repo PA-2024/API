@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API_GesSIgn.Models
 {
     /// <summary>
-    /// Class des étudiant d'une école
-    /// lié forcement a un utilisateurs 
+    /// Classe des étudiants d'une école
+    /// liée forcement à un utilisateur
     /// </summary>
     public class Student
     {
@@ -18,14 +19,15 @@ namespace API_GesSIgn.Models
         public string Student_LastName { get; set; }
 
         [Required]
-        public  User Student_User { get; set; }
+        public int Student_User_Id { get; set; }
 
-        /// <summary>
-        /// Classe de l'etudiant
-        /// </summary>
+        [ForeignKey("Student_User_Id")]
+        public User Student_User { get; set; }
+
         [Required]
-        public Sectors Student_sectors { get; set; }
+        public int Student_Sector_Id { get; set; }
 
-
+        [ForeignKey("Student_Sector_Id")]
+        public Sectors Student_Sectors { get; set; }
     }
 }

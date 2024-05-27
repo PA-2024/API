@@ -1,15 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API_GesSIgn.Models
 {
     /// <summary>
-    /// Class pour les utilisateurs S
+    /// Classe pour les utilisateurs
     /// </summary>
-    public class User : IdentityUser
+    public class User
     {
         [Key]
-        public  int User_Id { get; set; }
+        public int User_Id { get; set; }
 
         [Required]
         public string User_email { get; set; }
@@ -20,9 +20,9 @@ namespace API_GesSIgn.Models
         [Required]
         public Roles User_Role { get; set; }
 
-        /// <summary>
-        /// School de l'utilisateur
-        /// </summary>
-        public School? User_School { get; set; }
+        public int? User_School_Id { get; set; }
+
+        [ForeignKey("User_School_Id")]
+        public School User_School { get; set; }
     }
 }

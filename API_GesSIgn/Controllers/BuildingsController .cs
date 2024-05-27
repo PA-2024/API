@@ -19,7 +19,7 @@ namespace API_GesSIgn.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllBuildings()
         {
-            var buildings = await _context.Buildings.Include(b => b.School).ToListAsync();
+            var buildings = await _context.Buildings.Include(b => b.Bulding_School).ToListAsync();
             return Ok(buildings);
         }
 
@@ -28,7 +28,7 @@ namespace API_GesSIgn.Controllers
         public async Task<IActionResult> GetBuildingDetails(int id)
         {
             var building = await _context.Buildings
-                .Include(b => b.School)
+                .Include(b => b.Bulding_School)
                 .FirstOrDefaultAsync(b => b.Bulding_Id == id);
             if (building == null)
             {

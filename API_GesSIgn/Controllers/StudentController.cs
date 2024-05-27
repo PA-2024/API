@@ -25,7 +25,7 @@ namespace API_GesSIgn.Controllers
         {
             return await _context.Students
                 .Include(s => s.Student_User)
-                .Include(s => s.Student_sectors)
+                .Include(s => s.Student_Sectors)
                 .ToListAsync();
         }
 
@@ -35,7 +35,7 @@ namespace API_GesSIgn.Controllers
         {
             var student = await _context.Students
                 .Include(s => s.Student_User)
-                .Include(s => s.Student_sectors)
+                .Include(s => s.Student_Sectors)
                 .FirstOrDefaultAsync(s => s.Student_Id == id);
 
             if (student == null)

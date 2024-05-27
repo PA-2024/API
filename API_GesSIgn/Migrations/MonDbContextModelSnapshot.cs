@@ -84,20 +84,20 @@ namespace API_GesSIgn.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Presence_Id"));
 
-                    b.Property<Guid>("Prescence_Guid")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<bool>("Presence_Is")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("Presence_SubjectsHourSubjectsHour_Id")
+                    b.Property<int>("Presence_SubjectsHour_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("Presence_UserUser_Id")
+                    b.Property<int>("Presence_User_Id")
                         .HasColumnType("int");
 
                     b.HasKey("Presence_Id");
 
-                    b.HasIndex("Presence_SubjectsHourSubjectsHour_Id");
+                    b.HasIndex("Presence_SubjectsHour_Id");
 
-                    b.HasIndex("Presence_UserUser_Id");
+                    b.HasIndex("Presence_User_Id");
 
                     b.ToTable("Presences");
                 });
@@ -163,7 +163,7 @@ namespace API_GesSIgn.Migrations
 
                     b.HasKey("School_Id");
 
-                    b.ToTable("School");
+                    b.ToTable("Schools");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Sectors", b =>
@@ -178,12 +178,12 @@ namespace API_GesSIgn.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Sectors_SchoolSchool_Id")
+                    b.Property<int>("Sectors_School_Id")
                         .HasColumnType("int");
 
                     b.HasKey("Sectors_Id");
 
-                    b.HasIndex("Sectors_SchoolSchool_Id");
+                    b.HasIndex("Sectors_School_Id");
 
                     b.ToTable("Sectors");
                 });
@@ -204,17 +204,17 @@ namespace API_GesSIgn.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Student_UserUser_Id")
+                    b.Property<int>("Student_Sector_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("Student_sectorsSectors_Id")
+                    b.Property<int>("Student_User_Id")
                         .HasColumnType("int");
 
                     b.HasKey("Student_Id");
 
-                    b.HasIndex("Student_UserUser_Id");
+                    b.HasIndex("Student_Sector_Id");
 
-                    b.HasIndex("Student_sectorsSectors_Id");
+                    b.HasIndex("Student_User_Id");
 
                     b.ToTable("Students");
                 });
@@ -227,17 +227,17 @@ namespace API_GesSIgn.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Subjects_Id"));
 
-                    b.Property<int>("Subjects_SectorsSectors_Id")
+                    b.Property<int>("Subjects_Sector_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("Subjects_UserUser_Id")
+                    b.Property<int>("Subjects_User_Id")
                         .HasColumnType("int");
 
                     b.HasKey("Subjects_Id");
 
-                    b.HasIndex("Subjects_SectorsSectors_Id");
+                    b.HasIndex("Subjects_Sector_Id");
 
-                    b.HasIndex("Subjects_UserUser_Id");
+                    b.HasIndex("Subjects_User_Id");
 
                     b.ToTable("Subjects");
                 });
@@ -253,15 +253,15 @@ namespace API_GesSIgn.Migrations
                     b.Property<DateTime>("SubjectsHour_Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("SubjectsHour_Rooom")
+                    b.Property<string>("SubjectsHour_Room")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SubjectsHour_SectorsSectors_Id")
+                    b.Property<int>("SubjectsHour_Sector_Id")
                         .HasColumnType("int");
 
                     b.HasKey("SubjectsHour_Id");
 
-                    b.HasIndex("SubjectsHour_SectorsSectors_Id");
+                    b.HasIndex("SubjectsHour_Sector_Id");
 
                     b.ToTable("SubjectsHour");
                 });
@@ -274,55 +274,10 @@ namespace API_GesSIgn.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("User_Id"));
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("User_RoleRoles_Id")
                         .HasColumnType("int");
 
-                    b.Property<int?>("User_SchoolSchool_Id")
+                    b.Property<int?>("User_School_Id")
                         .HasColumnType("int");
 
                     b.Property<string>("User_email")
@@ -337,33 +292,33 @@ namespace API_GesSIgn.Migrations
 
                     b.HasIndex("User_RoleRoles_Id");
 
-                    b.HasIndex("User_SchoolSchool_Id");
+                    b.HasIndex("User_School_Id");
 
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Building", b =>
                 {
-                    b.HasOne("API_GesSIgn.Models.School", "School")
+                    b.HasOne("API_GesSIgn.Models.School", "Bulding_School")
                         .WithMany()
                         .HasForeignKey("School_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("School");
+                    b.Navigation("Bulding_School");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Presence", b =>
                 {
                     b.HasOne("API_GesSIgn.Models.SubjectsHour", "Presence_SubjectsHour")
                         .WithMany()
-                        .HasForeignKey("Presence_SubjectsHourSubjectsHour_Id")
+                        .HasForeignKey("Presence_SubjectsHour_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API_GesSIgn.Models.User", "Presence_User")
                         .WithMany()
-                        .HasForeignKey("Presence_UserUser_Id")
+                        .HasForeignKey("Presence_User_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -387,7 +342,7 @@ namespace API_GesSIgn.Migrations
                 {
                     b.HasOne("API_GesSIgn.Models.School", "Sectors_School")
                         .WithMany()
-                        .HasForeignKey("Sectors_SchoolSchool_Id")
+                        .HasForeignKey("Sectors_School_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -396,34 +351,34 @@ namespace API_GesSIgn.Migrations
 
             modelBuilder.Entity("API_GesSIgn.Models.Student", b =>
                 {
+                    b.HasOne("API_GesSIgn.Models.Sectors", "Student_Sectors")
+                        .WithMany()
+                        .HasForeignKey("Student_Sector_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("API_GesSIgn.Models.User", "Student_User")
                         .WithMany()
-                        .HasForeignKey("Student_UserUser_Id")
+                        .HasForeignKey("Student_User_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API_GesSIgn.Models.Sectors", "Student_sectors")
-                        .WithMany()
-                        .HasForeignKey("Student_sectorsSectors_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Student_Sectors");
 
                     b.Navigation("Student_User");
-
-                    b.Navigation("Student_sectors");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Subjects", b =>
                 {
                     b.HasOne("API_GesSIgn.Models.Sectors", "Subjects_Sectors")
                         .WithMany()
-                        .HasForeignKey("Subjects_SectorsSectors_Id")
+                        .HasForeignKey("Subjects_Sector_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API_GesSIgn.Models.User", "Subjects_User")
                         .WithMany()
-                        .HasForeignKey("Subjects_UserUser_Id")
+                        .HasForeignKey("Subjects_User_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -436,7 +391,7 @@ namespace API_GesSIgn.Migrations
                 {
                     b.HasOne("API_GesSIgn.Models.Sectors", "SubjectsHour_Sectors")
                         .WithMany()
-                        .HasForeignKey("SubjectsHour_SectorsSectors_Id")
+                        .HasForeignKey("SubjectsHour_Sector_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -453,7 +408,7 @@ namespace API_GesSIgn.Migrations
 
                     b.HasOne("API_GesSIgn.Models.School", "User_School")
                         .WithMany()
-                        .HasForeignKey("User_SchoolSchool_Id");
+                        .HasForeignKey("User_School_Id");
 
                     b.Navigation("User_Role");
 
