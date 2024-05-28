@@ -59,6 +59,7 @@ namespace API_GesSIgn.Controllers
         {
             var user = _context.Users
                 .Include(u => u.User_Role)
+                .Include(u => u.User_School)
                 .SingleOrDefault(u => u.User_email == login.User_email && u.User_password == login.User_password);
 
             if (user == null)
@@ -66,22 +67,33 @@ namespace API_GesSIgn.Controllers
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
-            var tokenDescriptor = new SecurityTokenDescriptor
+            List<Claim> claims = new List<Claim>
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
-                    new Claim(ClaimTypes.Role, user.User_Role.Role_Name)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
+                new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
+                new Claim(ClaimTypes.Role, user.User_Role.Role_Name)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
+            //si l'utilisateur possède une école
+            if (user.User_School != null)
+            {
+                claims.Add(new Claim("SchoolName", user.User_School.School_Name));
+            }
+            JwtSecurityToken jwtToken = new JwtSecurityToken(
+                claims: claims,
+                notBefore: DateTime.UtcNow,
+                expires: DateTime.UtcNow.AddDays(30),
+                signingCredentials: new SigningCredentials(
+                    new SymmetricSecurityKey(
+                       Encoding.UTF8.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus")
+                        ),
+                    SecurityAlgorithms.HmacSha256Signature)
+                );
+
+            var tokenString = tokenHandler.WriteToken(jwtToken);
 
             return Ok(new { Token = tokenString });
+
         }
     }
 }
