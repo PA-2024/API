@@ -23,7 +23,7 @@ namespace API_GesSIgn.Models
         public int? User_School_Id { get; set; }
 
         [ForeignKey("User_School_Id")]
-        public School User_School { get; set; }
+        public School? User_School { get; set; }
 
         [Required]
         public string User_lastname { get; set; }

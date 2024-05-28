@@ -32,12 +32,15 @@ namespace API_GesSIgn.Controllers
             if (_context.Users.Any(u => u.User_email == registerUser.User_email))
                 return BadRequest("Cet email est déjà utilisé.");
 
-            
             var user = new User
             {
                 User_email = registerUser.User_email,
-                User_password = registerUser.User_password, 
-                User_Role = registerUser.User_Role
+                User_password = registerUser.User_password,
+                User_Role = registerUser.User_Role,
+                User_School_Id = registerUser.User_School_Id, 
+                User_lastname = registerUser.User_lastname,
+                User_firstname = registerUser.User_firstname,
+                User_num = registerUser.User_num
             };
 
             _context.Users.Add(user);
