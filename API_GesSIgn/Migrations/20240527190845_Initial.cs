@@ -131,6 +131,7 @@ namespace API_GesSIgn.Migrations
                 {
                     SubjectsHour_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Subjects_Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubjectsHour_Sector_Id = table.Column<int>(type: "int", nullable: false),
                     SubjectsHour_Room = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SubjectsHour_Date = table.Column<DateTime>(type: "datetime2", nullable: false)

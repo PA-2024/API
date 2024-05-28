@@ -22,8 +22,6 @@ namespace API_GesSIgn.Controllers
         }
 
         /// <summary>
-        /// 
-        /// 
         /// Méthode pour l'enregistrement des utilisateurs
         /// </summary>
         /// <param name="registerUser"></param>
@@ -54,12 +52,11 @@ namespace API_GesSIgn.Controllers
         /// <param name="login"></param>
         /// <returns></returns>
         [HttpPost("login")]
-        public IActionResult Login([FromBody] User login)
+        public IActionResult Login([FromBody] LoginRequest login)
         {
             var user = _context.Users
-                .Include(u => u.User_Role) 
+                .Include(u => u.User_Role)
                 .SingleOrDefault(u => u.User_email == login.User_email && u.User_password == login.User_password);
-
 
             if (user == null)
                 return Unauthorized();

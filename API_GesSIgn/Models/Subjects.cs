@@ -12,6 +12,9 @@ namespace API_GesSIgn.Models
         public int Subjects_Id { get; set; }
 
         [Required]
+        public string Subjects_Name { get; set; }
+
+        [Required]
         public int Subjects_User_Id { get; set; }
 
         [ForeignKey("Subjects_User_Id")]
@@ -22,5 +25,6 @@ namespace API_GesSIgn.Models
 
         [ForeignKey("Subjects_Sector_Id")]
         public Sectors Subjects_Sectors { get; set; }
+
     }
 }

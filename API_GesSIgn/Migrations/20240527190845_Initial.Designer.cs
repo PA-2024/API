@@ -227,6 +227,11 @@ namespace API_GesSIgn.Migrations
                     b.Property<int>("Subjects_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+                    
+                    b.Property<string>("Subjects_Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+                    
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Subjects_Id"));
 
