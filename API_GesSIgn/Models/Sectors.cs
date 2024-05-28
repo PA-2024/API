@@ -24,6 +24,6 @@ namespace API_GesSIgn.Models
         public int Sectors_School_Id { get; set; }
 
         [ForeignKey("Sectors_School_Id")]
-        public School Sectors_School { get; set; }
+        public School? Sectors_School { get; set; }
     }
 }
