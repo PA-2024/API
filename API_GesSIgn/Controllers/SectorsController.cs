@@ -15,20 +15,36 @@ namespace API_GesSIgn.Controllers
             _context = context;
         }
 
-        // GET: Sectors
         [HttpGet]
         public async Task<IActionResult> GetAllSectors()
         {
-            var sectors = await _context.Sectors.ToListAsync();
-            return Ok(sectors); 
+            var sectors = await _context.Sectors
+                                        .Include(s => s.Sectors_School)
+                                        .Select(s => new 
+                                        {
+                                            s.Sectors_Id,
+                                            s.Sectors_Name,
+                                            Sectors_School = s.Sectors_School
+                                        })
+                                        .ToListAsync();
+
+            return Ok(sectors);
         }
+
 
         // GET: Sectors/Details/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSectorDetails(int id)
         {
             var sector = await _context.Sectors
-                .FirstOrDefaultAsync(s => s.Sectors_Id == id);
+                                        .Include(s => s.Sectors_School)
+                                        .Select(s => new 
+                                        {
+                                            s.Sectors_Id,
+                                            s.Sectors_Name,
+                                            Sectors_School = s.Sectors_School
+                                        })
+                                        .FirstOrDefaultAsync(s => s.Sectors_Id == id);
             if (sector == null)
             {
                 return NotFound();
@@ -37,7 +53,6 @@ namespace API_GesSIgn.Controllers
             return Ok(sector); 
         }
 
-        // POST: Sectors/Create
         // POST: Sectors/Create
         [HttpPost]
         public async Task<IActionResult> CreateSector([FromBody] Sectors sector)
