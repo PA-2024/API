@@ -38,6 +38,7 @@ namespace API_GesSIgn.Controllers
         }
 
         // POST: Sectors/Create
+        // POST: Sectors/Create
         [HttpPost]
         public async Task<IActionResult> CreateSector([FromBody] Sectors sector)
         {
@@ -45,7 +46,7 @@ namespace API_GesSIgn.Controllers
             {
                 return BadRequest(ModelState);
             }
-            
+
             var school = await _context.Schools.FindAsync(sector.Sectors_School_Id);
             if (school == null)
             {
@@ -55,8 +56,9 @@ namespace API_GesSIgn.Controllers
 
             _context.Sectors.Add(sector);
             await _context.SaveChangesAsync();
-            return CreatedAtAction("GetSectors", new { id = sector.Sectors_Id }, sector);
+            return CreatedAtAction(nameof(GetSectorDetails), new { id = sector.Sectors_Id }, sector);
         }
+
 
         // PUT: Sectors/Edit/5
         [HttpPut("{id}")]
