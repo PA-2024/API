@@ -13,20 +13,21 @@ namespace API_GesSIgn.Models
         public int Student_Id { get; set; }
 
         [Required]
-        public string Student_FirstName { get; set; }
-
-        [Required]
-        public string Student_LastName { get; set; }
-
-        [Required]
         public int Student_User_Id { get; set; }
 
+        /// <summary>
+        /// lien entre l'etudiant et l'user 
+        /// </summary>
         [ForeignKey("Student_User_Id")]
         public User Student_User { get; set; }
 
+        
         [Required]
         public int Student_Sector_Id { get; set; }
-
+        
+        /// <summary>
+        /// Classe de l'étudiant 
+        /// </summary>
         [ForeignKey("Student_Sector_Id")]
         public Sectors Student_Sectors { get; set; }
     }

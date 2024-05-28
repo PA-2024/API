@@ -21,6 +21,9 @@ namespace API_GesSIgn.Models
         public string? SubjectsHour_Room { get; set; }
 
         [Required]
-        public DateTime SubjectsHour_Date { get; set; }
+        public DateTime SubjectsHour_DateStart { get; set; }
+
+        [Required]
+        public DateTime SubjectsHour_DateEnd { get; set; }
     }
 }

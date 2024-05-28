@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
 
@@ -105,5 +108,21 @@ namespace API_GesSIgn.Controllers
         {
             return _context.Subjects.Any(e => e.Subjects_Id == id);
         }
+        
+        /*/ GET: api/SubjectsHour/byDateRange
+        [HttpGet("byDateRange")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHourByDateRange(DateTime startDate, DateTime endDate)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            
+            var subjectsHours = await _context.SubjectsHour
+                .Where(sh => sh.SubjectsHour_DateStart >= startDate && sh.SubjectsHour_DateEnd <= endDate)
+                .Where(sh => _context.Students.Any(p => p.Presence_SubjectsHour_Id == sh.SubjectsHour_Id && p.Presence_User_Id == userId))
+                .Include(sh => sh.SubjectsHour_Sectors)
+                .ToListAsync();
+
+            return Ok(subjectsHours);
+        } */
     }
 }

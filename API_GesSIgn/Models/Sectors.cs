@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace API_GesSIgn.Models
 {
     /// <summary>
-    /// Classe des secteurs (classes d'étudiants)
+    /// Classe d'étudiant
     /// </summary>
     public class Sectors
     {

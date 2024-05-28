@@ -45,10 +45,16 @@ namespace API_GesSIgn.Controllers
             {
                 return BadRequest(ModelState);
             }
+            var school = await _context.Schools.FindAsync(sector.Sectors_School_Id);
+            if (school == null)
+            {
+                return BadRequest("School not found.");
+            }
+
 
             _context.Sectors.Add(sector);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetSectorDetails), new { id = sector.Sectors_Id }, sector);
+            return CreatedAtAction("GetSectors", new { id = sector.Sectors_Id }, sector);
         }
 
         // PUT: Sectors/Edit/5
