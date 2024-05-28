@@ -67,7 +67,8 @@ namespace API_GesSIgn.Controllers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.User_Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
                     new Claim(ClaimTypes.Role, user.User_Role.Role_Name)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),

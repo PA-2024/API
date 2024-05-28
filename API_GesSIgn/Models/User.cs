@@ -24,5 +24,13 @@ namespace API_GesSIgn.Models
 
         [ForeignKey("User_School_Id")]
         public School User_School { get; set; }
+
+        [Required]
+        public string User_lastname { get; set; }
+        
+        [Required]
+        public string User_firstname { get; set; }
+
+        public string User_num { get; set; }
     }
 }
