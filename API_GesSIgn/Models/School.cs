@@ -11,6 +11,7 @@ namespace API_GesSIgn.Models
         [Key]
         public  int School_Id { get; set; }
 
+        [MaxLength(255)]
         [Required]
         public string School_Name { get; set; }
 

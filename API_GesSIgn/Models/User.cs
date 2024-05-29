@@ -11,6 +11,7 @@ namespace API_GesSIgn.Models
         [Key]
         public int User_Id { get; set; }
 
+        [MaxLength(255)]
         [Required]
         public string User_email { get; set; }
 

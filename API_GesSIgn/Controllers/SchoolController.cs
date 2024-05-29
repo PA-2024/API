@@ -1,6 +1,7 @@
 ﻿using API_GesSIgn.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_GesSIgn.Controllers
@@ -40,21 +41,53 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return Ok(school); // Returns JSON object of a single school
+            return Ok(school); 
+        }
+
+        // GET: School/DetailsbyName/ESGI
+        [HttpGet("{id}")]
+        public async Task<IActionResult> DetailsbyName(string name)
+        {
+            if (name == null)
+            {
+                return NotFound();
+            }
+
+            var school = await _context.Schools
+                .FirstOrDefaultAsync(m => m.School_Name == name);
+            if (school == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(school); 
         }
 
         // POST: School/Create
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] School school)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(school);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction(nameof(Details), new { id = school.School_Id }, school); // Return a 201 status code
+                if (ModelState.IsValid)
+                {
+                    _context.Add(school);
+                    await _context.SaveChangesAsync();
+                    return CreatedAtAction(nameof(Details), new { id = school.School_Id }, school); 
+                }
+                return BadRequest(ModelState); // Return 400 status si model pas valide
             }
-            return BadRequest(ModelState); // Return 400 status code with ModelState
+            catch (DbUpdateException ex)
+            {
+                // Gérer l'erreur de violation de contrainte de clé unique
+                if (ex.InnerException is SqlException sqlException && sqlException.Number == 2627)
+                {
+                    return Conflict("Une école avec le même nom existe déjà."); 
+                }
+                return StatusCode(500, "Une erreur s'est produite lors de la création de l'école.");
+            }
         }
+
 
         // POST: School/Edit/5
         [HttpPost("{id}")]
