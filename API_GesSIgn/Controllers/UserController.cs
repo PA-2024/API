@@ -109,7 +109,6 @@ namespace API_GesSIgn.Controllers
             }
         }
 
-        //
         [HttpGet("bytoken/")]
         public async Task<ActionResult<IEnumerable<User>>> GetMyUsersByToken() {
             
@@ -117,6 +116,7 @@ namespace API_GesSIgn.Controllers
 
             var users = await _context.Users
                     .Include(u => u.User_Role)
+                    .Include(u => u.User_School)
                     .Where(u => u.User_Id == userId)
                     .ToListAsync();
             return Ok(users);
