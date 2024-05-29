@@ -22,11 +22,11 @@ namespace API_GesSIgn.Controllers
         public async Task<IActionResult> Index()
         {
             var schools = await _context.Schools.ToListAsync();
-            return Ok(schools); // Returns JSON list of schools
+            return Ok(schools); 
         }
 
         // GET: School/Details/5
-        [HttpGet("{id}")]
+        [HttpGet("Details/{id}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -41,11 +41,11 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return Ok(school); 
+            return Ok(school);
         }
 
         // GET: School/DetailsbyName/ESGI
-        [HttpGet("{name}")]
+        [HttpGet("DetailsbyName/{name}")]
         public async Task<IActionResult> DetailsbyName(string name)
         {
             if (name == null)
@@ -60,9 +60,10 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return Ok(school); 
+            return Ok(school);
         }
 
+        
         // POST: School/Create
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] School school)
