@@ -108,5 +108,19 @@ namespace API_GesSIgn.Controllers
                 return StatusCode(500, "Une erreur s'est produite lors de la mise à jour de l'utilisateur.");
             }
         }
+
+        //
+        [HttpGet("bytoken/")]
+        public async Task<ActionResult<IEnumerable<User>>> GetMyUsersByToken() {
+            
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var users = await _context.Users
+                    .Include(u => u.User_Role)
+                    .Where(u => u.User_Id == userId)
+                    .ToListAsync();
+            return Ok(users);
+        }
+        
     }
 }
