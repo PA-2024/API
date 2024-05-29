@@ -67,30 +67,21 @@ namespace API_GesSIgn.Controllers
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
-            List<Claim> claims = new List<Claim>
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
-                new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
-                new Claim(ClaimTypes.Role, user.User_Role.Role_Name)
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
+                    new Claim(ClaimTypes.Role, user.User_Role.Role_Name),
+                    new Claim("SchoolName", user.User_School?.School_Name ?? string.Empty)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
-            //si l'utilisateur possède une école
-            if (user.User_School != null)
-            {
-                claims.Add(new Claim("SchoolName", user.User_School.School_Name));
-            }
-            JwtSecurityToken jwtToken = new JwtSecurityToken(
-                claims: claims,
-                notBefore: DateTime.UtcNow,
-                expires: DateTime.UtcNow.AddDays(30),
-                signingCredentials: new SigningCredentials(
-                    new SymmetricSecurityKey(
-                       Encoding.UTF8.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus")
-                        ),
-                    SecurityAlgorithms.HmacSha256Signature)
-                );
-
-            var tokenString = tokenHandler.WriteToken(jwtToken);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
 
             return Ok(new { Token = tokenString });
 
