@@ -45,7 +45,7 @@ namespace API_GesSIgn.Controllers
         }
 
         // GET: School/DetailsbyName/ESGI
-        [HttpGet("{id}")]
+        [HttpGet("{name}")]
         public async Task<IActionResult> DetailsbyName(string name)
         {
             if (name == null)

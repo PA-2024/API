@@ -61,5 +61,52 @@ namespace API_GesSIgn.Controllers
                 return new ObjectResult("Vous ne possédez pas les droits pour voir la liste.") { StatusCode = 403 };
             }
         }
+
+        // PUT: api/User/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User updateUser)
+        {
+            var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            // Récupérer l'utilisateur à mettre à jour
+            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.User_Id == id);
+
+            if (userToUpdate == null)
+            {
+                return NotFound("Utilisateur non trouvé.");
+            }
+
+            // L'utilisateur avec le rôle "Admin" peut modifier les utilisateurs avec le rôle "Gestion Ecole"
+            if (roleName == "Admin" && userToUpdate.User_Role.Role_Name == "Gestion Ecole")
+            {
+                userToUpdate.User_email = updateUser.User_email;
+                userToUpdate.User_lastname = updateUser.User_lastname;
+                userToUpdate.User_firstname = updateUser.User_firstname;
+                userToUpdate.User_num = updateUser.User_num;
+            }
+            // L'utilisateur avec le rôle "Gestion Ecole" peut modifier les utilisateurs de son école
+            else if (roleName == "Gestion Ecole" && userToUpdate.User_School_Id == userId)
+            {
+                userToUpdate.User_email = updateUser.User_email;
+                userToUpdate.User_lastname = updateUser.User_lastname;
+                userToUpdate.User_firstname = updateUser.User_firstname;
+                userToUpdate.User_num = updateUser.User_num;
+            }
+            else
+            {
+                // L'utilisateur n'a pas les autorisations nécessaires pour effectuer cette action
+                return new ForbidResult();
+            }
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent(); // Retourner un code 204
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Une erreur s'est produite lors de la mise à jour de l'utilisateur.");
+            }
+        }
     }
 }
