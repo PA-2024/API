@@ -21,6 +21,6 @@ namespace API_GesSIgn.Models
         /// Professeur de la matière 
         /// </summary>
         [ForeignKey("Subjects_User_Id")]
-        public User Subjects_User { get; set; }
+        public User? Subjects_User { get; set; }
     }
 }

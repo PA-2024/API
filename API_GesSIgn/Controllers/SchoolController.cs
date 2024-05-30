@@ -89,7 +89,6 @@ namespace API_GesSIgn.Controllers
             }
         }
 
-
         // POST: School/Edit/5
         [HttpPost("{id}")]
         public async Task<IActionResult> Edit(int id, [FromBody] School school)

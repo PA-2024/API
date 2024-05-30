@@ -16,7 +16,7 @@ namespace API_GesSIgn.Models
         public int SubjectsHour_Sector_Id { get; set; }
 
         [ForeignKey("SubjectsHour_Sector_Id")]
-        public Sectors SubjectsHour_Sectors { get; set; }
+        public Sectors? SubjectsHour_Sectors { get; set; }
 
         public string? SubjectsHour_Room { get; set; }
 
