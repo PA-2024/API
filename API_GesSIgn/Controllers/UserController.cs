@@ -76,7 +76,7 @@ namespace API_GesSIgn.Controllers
             }
 
             // Récupérer l'utilisateur à mettre à jour
-            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.User_Id == id);
+            var userToUpdate = await _context.Users.Include(u => u.User_Role).FirstOrDefaultAsync(u => u.User_Id == id);
 
             if (userToUpdate == null)
             {
