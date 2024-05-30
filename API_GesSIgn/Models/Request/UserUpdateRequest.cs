@@ -1,0 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace API_GesSIgn.Models
+{
+    public class UserUpdateRequest
+    {
+        [MaxLength(255)]
+        public string? User_email { get; set; }
+
+        public string? User_lastname { get; set; }
+
+        public string? User_firstname { get; set; }
+
+        public string? User_num { get; set; }
+    }
+}

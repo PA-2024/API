@@ -64,7 +64,7 @@ namespace API_GesSIgn.Controllers
 
         // PUT: api/User/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User updateUser)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserUpdateRequest updateUser)
         {
             var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -76,22 +76,29 @@ namespace API_GesSIgn.Controllers
             {
                 return NotFound("Utilisateur non trouvé.");
             }
-
             // L'utilisateur avec le rôle "Admin" peut modifier les utilisateurs avec le rôle "Gestion Ecole"
             if (roleName == "Admin" && userToUpdate.User_Role.Role_Name == "Gestion Ecole")
             {
-                userToUpdate.User_email = updateUser.User_email;
-                userToUpdate.User_lastname = updateUser.User_lastname;
-                userToUpdate.User_firstname = updateUser.User_firstname;
-                userToUpdate.User_num = updateUser.User_num;
+                if (!string.IsNullOrEmpty(updateUser.User_email))
+                    userToUpdate.User_email = updateUser.User_email;
+                if (!string.IsNullOrEmpty(updateUser.User_lastname))
+                    userToUpdate.User_lastname = updateUser.User_lastname;
+                if (!string.IsNullOrEmpty(updateUser.User_firstname))
+                    userToUpdate.User_firstname = updateUser.User_firstname;
+                if (!string.IsNullOrEmpty(updateUser.User_num))
+                    userToUpdate.User_num = updateUser.User_num;
             }
             // L'utilisateur avec le rôle "Gestion Ecole" peut modifier les utilisateurs de son école
             else if (roleName == "Gestion Ecole" && userToUpdate.User_School_Id == userId)
             {
-                userToUpdate.User_email = updateUser.User_email;
-                userToUpdate.User_lastname = updateUser.User_lastname;
-                userToUpdate.User_firstname = updateUser.User_firstname;
-                userToUpdate.User_num = updateUser.User_num;
+                if (!string.IsNullOrEmpty(updateUser.User_email))
+                    userToUpdate.User_email = updateUser.User_email;
+                if (!string.IsNullOrEmpty(updateUser.User_lastname))
+                    userToUpdate.User_lastname = updateUser.User_lastname;
+                if (!string.IsNullOrEmpty(updateUser.User_firstname))
+                    userToUpdate.User_firstname = updateUser.User_firstname;
+                if (!string.IsNullOrEmpty(updateUser.User_num))
+                    userToUpdate.User_num = updateUser.User_num;
             }
             else
             {
@@ -105,9 +112,10 @@ namespace API_GesSIgn.Controllers
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, "Une erreur s'est produite lors de la mise à jour de l'utilisateur.");
+                return StatusCode(500, "Une erreur s'est produite lors de la mise à jour de l'utilisateur." + ex.Message);
             }
         }
+
 
         // GET: api/User/bytoken/
         [HttpGet("bytoken/")]
