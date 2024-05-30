@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
 using API_GesSIgn.Models.Response;
+using API_GesSIgn.Models.Request;
 
 namespace API_GesSIgn.Controllers
 {
@@ -58,8 +59,22 @@ namespace API_GesSIgn.Controllers
 
         // POST: api/Subjects
         [HttpPost]
-        public async Task<ActionResult<Subjects>> PostSubjects(Subjects subjects)
+        public async Task<ActionResult<Subjects>> PostSubjects(CreateSubjectRequest request)
         {
+
+            var user = await _context.Users.FindAsync(request.Subjects_User_Id);
+            if (user == null)
+            {
+                return NotFound($"User with ID {request.Subjects_User_Id} not found.");
+            }
+
+            var subjects = new Subjects
+            {
+                Subjects_Id = request.Subjects_Id,
+                Subjects_Name = request.Subjects_Name,
+                Subjects_User = user 
+            };
+
             _context.Subjects.Add(subjects);
             await _context.SaveChangesAsync();
 
@@ -68,12 +83,27 @@ namespace API_GesSIgn.Controllers
 
         // PUT: api/Subjects/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSubjects(int id, Subjects subjects)
+        public async Task<IActionResult> PutSubjects(int id, CreateSubjectRequest request)
         {
-            if (id != subjects.Subjects_Id)
+            if (id != request.Subjects_Id)
             {
                 return BadRequest();
             }
+            var subjects = await _context.Subjects
+                .Include(s => s.Subjects_User)
+                .FirstOrDefaultAsync(s => s.Subjects_Id == id);
+
+            if (subjects == null)
+            {
+                return NotFound();
+            }
+            var user = await _context.Users.FindAsync(request.Subjects_User_Id);
+            if (user == null)
+            {
+                return NotFound($"User with ID {request.Subjects_User_Id} not found.");
+            }
+            subjects.Subjects_Name = request.Subjects_Name;
+            subjects.Subjects_User = user;
 
             _context.Entry(subjects).State = EntityState.Modified;
 
@@ -83,18 +113,12 @@ namespace API_GesSIgn.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SubjectsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound("DataBase Problem");
             }
 
             return NoContent();
         }
+
 
         // DELETE: api/Subjects/5
         [HttpDelete("{id}")]
