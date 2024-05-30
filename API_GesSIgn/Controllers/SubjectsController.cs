@@ -34,14 +34,7 @@ namespace API_GesSIgn.Controllers
             {
                 Subjects_Id = s.Subjects_Id,
                 Subjects_Name = s.Subjects_Name,
-                Teacher = new UserSimplifyDto
-                {
-                    User_Id = s.Subjects_User.User_Id,
-                    User_email = s.Subjects_User.User_email,
-                    User_lastname = s.Subjects_User.User_lastname,
-                    User_firstname = s.Subjects_User.User_firstname,
-                    User_num = s.Subjects_User.User_num
-                }
+                Teacher = UserSimplifyDto.FromUser(s.Subjects_User)
             }).ToList();
 
             return Ok(subjectDtos);

@@ -22,5 +22,17 @@ namespace API_GesSIgn.Models.Response
         public string User_firstname { get; set; }
 
         public string User_num { get; set; }
+
+        public static UserSimplifyDto FromUser(User user)
+        {
+            return new UserSimplifyDto
+            {
+                User_Id = user.User_Id,
+                User_email = user.User_email,
+                User_lastname = user.User_lastname,
+                User_firstname = user.User_firstname,
+                User_num = user.User_num
+            };
+        }   
     }
 }
