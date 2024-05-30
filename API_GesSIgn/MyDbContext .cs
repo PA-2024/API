@@ -56,20 +56,16 @@ public class MonDbContext : DbContext
             .WithMany()
             .HasForeignKey(s => s.Subjects_User_Id);
 
-        modelBuilder.Entity<Subjects>()
-            .HasOne(s => s.Subjects_Sectors)
-            .WithMany()
-            .HasForeignKey(s => s.Subjects_Sector_Id);
-
         modelBuilder.Entity<SubjectsHour>()
             .HasOne(sh => sh.SubjectsHour_Sectors)
             .WithMany()
             .HasForeignKey(sh => sh.SubjectsHour_Sector_Id);
 
         modelBuilder.Entity<Presence>()
-            .HasOne(p => p.Presence_User)
+            .HasOne(p => p.Presence_Student)
             .WithMany()
-            .HasForeignKey(p => p.Presence_User_Id);
+            .HasForeignKey(p => p.Presence_Student_Id)
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Presence>()
             .HasOne(p => p.Presence_SubjectsHour)

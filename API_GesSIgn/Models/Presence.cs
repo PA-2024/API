@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace API_GesSIgn.Models
 {
     /// <summary>
-    /// Modèle de présence de l'élève
+    /// Modï¿½le de prï¿½sence de l'ï¿½lï¿½ve
     /// </summary>
     public class Presence
     {
@@ -14,11 +14,17 @@ namespace API_GesSIgn.Models
         public int Presence_Id { get; set; }
 
         [Required]
-        public int Presence_User_Id { get; set; }
+        public int Presence_Student_Id { get; set; }
 
-        [ForeignKey("Presence_User_Id")]
-        public User Presence_User { get; set; }
+        /// <summary>
+        /// Eleve
+        /// </summary>
+        [ForeignKey("Presence_Student_Id")]
+        public Student Presence_Student { get; set; }
 
+        /// <summary>
+        /// Heure de cours 
+        /// </summary>
         [Required]
         public int Presence_SubjectsHour_Id { get; set; }
 

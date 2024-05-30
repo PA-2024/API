@@ -27,7 +27,6 @@ namespace API_GesSIgn.Controllers
         {
             return await _context.Subjects
                 .Include(s => s.Subjects_User)
-                .Include(s => s.Subjects_Sectors)
                 .ToListAsync();
         }
 
@@ -37,7 +36,6 @@ namespace API_GesSIgn.Controllers
         {
             var subjects = await _context.Subjects
                 .Include(s => s.Subjects_User)
-                .Include(s => s.Subjects_Sectors)
                 .FirstOrDefaultAsync(s => s.Subjects_Id == id);
 
             if (subjects == null)

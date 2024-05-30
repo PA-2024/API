@@ -23,7 +23,7 @@ namespace API_GesSIgn.Controllers
         public async Task<ActionResult<IEnumerable<Presence>>> GetPresences()
         {
             return await _context.Presences
-                .Include(p => p.Presence_User)
+                .Include(p => p.Presence_Student)
                 .Include(p => p.Presence_SubjectsHour)
                 .ThenInclude(sh => sh.SubjectsHour_Sectors)
                 .ToListAsync();
@@ -34,7 +34,7 @@ namespace API_GesSIgn.Controllers
         public async Task<ActionResult<Presence>> GetPresence(int id)
         {
             var presence = await _context.Presences
-                .Include(p => p.Presence_User)
+                .Include(p => p.Presence_Student)
                 .Include(p => p.Presence_SubjectsHour)
                 .ThenInclude(sh => sh.SubjectsHour_Sectors)
                 .FirstOrDefaultAsync(p => p.Presence_Id == id);
