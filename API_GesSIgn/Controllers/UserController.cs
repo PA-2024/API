@@ -33,6 +33,7 @@ namespace API_GesSIgn.Controllers
                 // Return users with the role "Gestion Ecole"
                 var users = await _context.Users
                     .Include(u => u.User_Role)
+                    .Include(u => u.User_School)
                     .Where(u => u.User_Role.Role_Name == "Gestion Ecole")
                     .ToListAsync();
                 return Ok(users);
@@ -48,10 +49,10 @@ namespace API_GesSIgn.Controllers
                 {
                     return BadRequest("User or user's school not found.");
                 }
-
                 // Return users from the same school
                 var users = await _context.Users
                     .Include(u => u.User_Role)
+                    .Include(u => u.User_School)
                     .Where(u => u.User_School_Id == currentUser.User_School_Id)
                     .ToListAsync();
                 return Ok(users);
