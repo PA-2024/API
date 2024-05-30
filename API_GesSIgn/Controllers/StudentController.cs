@@ -7,6 +7,7 @@ using API_GesSIgn.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Runtime.CompilerServices;
+using API_GesSIgn.Models.Request;
 
 namespace API_GesSIgn.Controllers
 {
@@ -51,12 +52,23 @@ namespace API_GesSIgn.Controllers
 
         // POST: api/Student
         [HttpPost]
-        public async Task<ActionResult<Student>> PostStudent(Student student)
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<ActionResult<Student>> PostStudent(StudentRequest student)
         {
-            _context.Students.Add(student);
-            await _context.SaveChangesAsync();
+            if (student == null && UserController.UserExists(student.Student_User_id, _context) && SectorsController.SectorExist(student.Student_Class_id, _context) )
+            {
+                return BadRequest("Student is null or Student/id wrong ");
+            }
+            var result = new Student
+            {
+                Student_User_Id = student.Student_User_id,
+                Student_Sector_Id = student.Student_Class_id
+            };
 
-            return CreatedAtAction("GetStudent", new { id = student.Student_Id }, student);
+            _context.Students.Add(result);
+            var save = await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetStudent", new { id = result.Student_Id }, student);
         }
 
         // PUT: api/Student/5

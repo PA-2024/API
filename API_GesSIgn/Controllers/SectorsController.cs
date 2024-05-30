@@ -24,7 +24,7 @@ namespace API_GesSIgn.Controllers
                                         {
                                             s.Sectors_Id,
                                             s.Sectors_Name,
-                                            Sectors_School = s.Sectors_School
+                                            s.Sectors_School
                                         })
                                         .ToListAsync();
 
@@ -42,7 +42,7 @@ namespace API_GesSIgn.Controllers
                                         {
                                             s.Sectors_Id,
                                             s.Sectors_Name,
-                                            Sectors_School = s.Sectors_School
+                                            s.Sectors_School
                                         })
                                         .FirstOrDefaultAsync(s => s.Sectors_Id == id);
             if (sector == null)
@@ -129,5 +129,12 @@ namespace API_GesSIgn.Controllers
         {
             return _context.Sectors.Any(s => s.Sectors_Id == id);
         }
+
+        public static bool SectorExist(int id, MonDbContext context)
+        {
+            return context.Sectors.Any(s => s.Sectors_Id == id);
+        }
+
+
     }
 }

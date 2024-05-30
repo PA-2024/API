@@ -168,5 +168,12 @@ namespace API_GesSIgn.Controllers
             }
 
         }
+
+
+        public static bool UserExists(int id, MonDbContext _context)
+        {
+            return _context.Users.Any(e => e.User_Id == id);
+        }   
+
     }
 }
