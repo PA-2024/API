@@ -14,6 +14,7 @@ namespace API_GesSIgn.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [RoleRequirement("Gestion Ecole")]
     public class SubjectsController : ControllerBase
     {
         private readonly MonDbContext _context;
