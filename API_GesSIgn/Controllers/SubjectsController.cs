@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
+using API_GesSIgn.Models.Response;
 
 namespace API_GesSIgn.Controllers
 {
@@ -23,11 +24,27 @@ namespace API_GesSIgn.Controllers
 
         // GET: api/Subjects
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Subjects>>> GetSubjects()
+        public async Task<ActionResult<IEnumerable<SubjectsdDto>>> GetSubjects()
         {
-            return await _context.Subjects
+            var subjects = await _context.Subjects
                 .Include(s => s.Subjects_User)
                 .ToListAsync();
+
+            var subjectDtos = subjects.Select(s => new SubjectsdDto
+            {
+                Subjects_Id = s.Subjects_Id,
+                Subjects_Name = s.Subjects_Name,
+                Teacher = new UserSimplifyDto
+                {
+                    User_Id = s.Subjects_User.User_Id,
+                    User_email = s.Subjects_User.User_email,
+                    User_lastname = s.Subjects_User.User_lastname,
+                    User_firstname = s.Subjects_User.User_firstname,
+                    User_num = s.Subjects_User.User_num
+                }
+            }).ToList();
+
+            return Ok(subjectDtos);
         }
 
         // GET: api/Subjects/5
