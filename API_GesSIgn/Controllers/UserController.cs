@@ -68,6 +68,11 @@ namespace API_GesSIgn.Controllers
         {
             var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            
+            if (roleName == null || userId == 0)
+            {
+                return StatusCode(500, "Erreur lors de la récupération des informations de l'utilisateur authentifié.");
+            }
 
             // Récupérer l'utilisateur à mettre à jour
             var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.User_Id == id);
