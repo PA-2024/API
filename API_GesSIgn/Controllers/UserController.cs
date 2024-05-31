@@ -69,6 +69,7 @@ namespace API_GesSIgn.Controllers
         {
             var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            string userSchoolId = User.FindFirst("SchoolId")?.Value;
             
             if (roleName == null || userId == 0)
             {
@@ -95,7 +96,7 @@ namespace API_GesSIgn.Controllers
                     userToUpdate.User_num = updateUser.User_num;
             }
             // L'utilisateur avec le rôle "Gestion Ecole" peut modifier les utilisateurs de son école
-            else if (roleName == "Gestion Ecole" && userToUpdate.User_School_Id == userId)
+            else if (roleName == "Gestion Ecole" && userToUpdate.User_School_Id == Convert.ToInt32(userSchoolId))
             {
                 if (!string.IsNullOrEmpty(updateUser.User_email))
                     userToUpdate.User_email = updateUser.User_email;

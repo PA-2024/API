@@ -74,7 +74,8 @@ namespace API_GesSIgn.Controllers
                     new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
                     new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
                     new Claim(ClaimTypes.Role, user.User_Role.Role_Name),
-                    new Claim("SchoolName", user.User_School?.School_Name ?? string.Empty)
+                    new Claim("SchoolName", user.User_School?.School_Name ?? string.Empty),
+                    new Claim("SchoolId", user.User_School?.School_Id.ToString() ?? string.Empty)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
