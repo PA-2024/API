@@ -77,7 +77,7 @@ namespace API_GesSIgn.Controllers
                     new Claim("SchoolName", user.User_School?.School_Name ?? string.Empty),
                     new Claim("SchoolId", user.User_School?.School_Id.ToString() ?? string.Empty)
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
