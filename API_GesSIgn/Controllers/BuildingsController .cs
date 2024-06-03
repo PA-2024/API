@@ -38,6 +38,22 @@ namespace API_GesSIgn.Controllers
             return Ok(building);
         }
 
+        // GET: Buildings/GetBySchool/5
+        [HttpGet("GetBySchool/{id}")]
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<IActionResult> GetBuildingbySchool(int id)
+        {
+            var buildings = await _context.Buildings
+                .Include(b => b.Bulding_School)
+                .Where(b => b.Bulding_School.School_Id == id).ToListAsync(); ;
+            if (buildings == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(buildings);
+        }
+
         // POST: Buildings/Create
         [HttpPost]
         public async Task<IActionResult> CreateBuilding([FromBody] Building building)
