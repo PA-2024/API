@@ -25,7 +25,7 @@ namespace API_GesSIgn.Controllers
             return await _context.Presences
                 .Include(p => p.Presence_Student)
                 .Include(p => p.Presence_SubjectsHour)
-                .ThenInclude(sh => sh.SubjectsHour_Sectors)
+                .ThenInclude(sh => sh.SubjectsHour_Subjects)
                 .ToListAsync();
         }
 
@@ -36,7 +36,7 @@ namespace API_GesSIgn.Controllers
             var presence = await _context.Presences
                 .Include(p => p.Presence_Student)
                 .Include(p => p.Presence_SubjectsHour)
-                .ThenInclude(sh => sh.SubjectsHour_Sectors)
+                .ThenInclude(sh => sh.SubjectsHour_Subjects)
                 .FirstOrDefaultAsync(p => p.Presence_Id == id);
 
             if (presence == null)

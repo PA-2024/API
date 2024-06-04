@@ -57,9 +57,14 @@ public class MonDbContext : DbContext
             .HasForeignKey(s => s.Subjects_User_Id);
 
         modelBuilder.Entity<SubjectsHour>()
-            .HasOne(sh => sh.SubjectsHour_Sectors)
+            .HasOne(sh => sh.SubjectsHour_Subjects)
             .WithMany()
-            .HasForeignKey(sh => sh.SubjectsHour_Sector_Id);
+            .HasForeignKey(sh => sh.SubjectsHour_Subjects_Id);
+
+        modelBuilder.Entity<SubjectsHour>()
+            .HasOne(sh => sh.SubjectsHour_Bulding)
+            .WithMany()
+            .HasForeignKey(sh => sh.SubjectsHour_Bulding_Id);
 
         modelBuilder.Entity<Presence>()
             .HasOne(p => p.Presence_Student)

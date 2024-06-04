@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
+using API_GesSIgn.Models.Request;
 
 namespace API_GesSIgn.Controllers
 {
@@ -23,7 +24,7 @@ namespace API_GesSIgn.Controllers
         public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHours()
         {
             return await _context.SubjectsHour
-                .Include(s => s.SubjectsHour_Sectors)
+                .Include(s => s.SubjectsHour_Subjects)
                 .ToListAsync();
         }
 
@@ -32,7 +33,7 @@ namespace API_GesSIgn.Controllers
         public async Task<ActionResult<SubjectsHour>> GetSubjectsHour(int id)
         {
             var subjectsHour = await _context.SubjectsHour
-                .Include(s => s.SubjectsHour_Sectors)
+                .Include(s => s.SubjectsHour_Subjects)
                 .FirstOrDefaultAsync(s => s.SubjectsHour_Id == id);
 
             if (subjectsHour == null)
@@ -45,8 +46,17 @@ namespace API_GesSIgn.Controllers
 
         // POST: api/SubjectsHour
         [HttpPost]
-        public async Task<ActionResult<SubjectsHour>> PostSubjectsHour(SubjectsHour subjectsHour)
+        public async Task<ActionResult<SubjectsHour>> PostSubjectsHour(CreateSubjectHourRequest subjectsHourUp)
         {
+            SubjectsHour subjectsHour = new SubjectsHour
+            {
+                SubjectsHour_DateStart = subjectsHourUp.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = subjectsHourUp.SubjectsHour_DateEnd,
+                SubjectsHour_Room = subjectsHourUp.SubjectsHour_Room,
+                SubjectsHour_Subjects = await _context.Subjects.FindAsync(subjectsHourUp.SubjectsHour_Subjects_Id),
+                SubjectsHour_Bulding = await _context.Buildings.FindAsync(subjectsHourUp.SubjectsHour_Building_Id)   
+            };
+
             _context.SubjectsHour.Add(subjectsHour);
             await _context.SaveChangesAsync();
 

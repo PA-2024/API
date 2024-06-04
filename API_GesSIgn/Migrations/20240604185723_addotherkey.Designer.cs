@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_GesSIgn.Migrations
 {
     [DbContext(typeof(MonDbContext))]
-    partial class MonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240604185723_addotherkey")]
+    partial class addotherkey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,9 +245,6 @@ namespace API_GesSIgn.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectsHour_Id"));
 
-                    b.Property<int?>("SubjectsHour_Bulding_Id")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("SubjectsHour_DateEnd")
                         .HasColumnType("datetime2");
 
@@ -261,8 +261,6 @@ namespace API_GesSIgn.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("SubjectsHour_Id");
-
-                    b.HasIndex("SubjectsHour_Bulding_Id");
 
                     b.HasIndex("SubjectsHour_Subjects_Id");
 
@@ -397,17 +395,11 @@ namespace API_GesSIgn.Migrations
 
             modelBuilder.Entity("API_GesSIgn.Models.SubjectsHour", b =>
                 {
-                    b.HasOne("API_GesSIgn.Models.Building", "SubjectsHour_Bulding")
-                        .WithMany()
-                        .HasForeignKey("SubjectsHour_Bulding_Id");
-
                     b.HasOne("API_GesSIgn.Models.Subjects", "SubjectsHour_Subjects")
                         .WithMany()
                         .HasForeignKey("SubjectsHour_Subjects_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("SubjectsHour_Bulding");
 
                     b.Navigation("SubjectsHour_Subjects");
                 });

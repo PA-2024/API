@@ -12,11 +12,21 @@ namespace API_GesSIgn.Models
         [Key]
         public int SubjectsHour_Id { get; set; }
 
+        /// <summary>
+        /// ID de la matière
+        /// </summary>
         [Required]
-        public int SubjectsHour_Sector_Id { get; set; }
+        public int SubjectsHour_Subjects_Id { get; set; }
 
         [ForeignKey("SubjectsHour_Sector_Id")]
-        public Sectors? SubjectsHour_Sectors { get; set; }
+        public Subjects? SubjectsHour_Subjects { get; set; }
+
+
+        public int? SubjectsHour_Bulding_Id { get; set; }
+
+
+        [ForeignKey("SubjectsHour_Bulding_Id")]
+        public Building? SubjectsHour_Bulding { get; set; }
 
         public string? SubjectsHour_Room { get; set; }
 
