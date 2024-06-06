@@ -1,4 +1,5 @@
 ﻿using API_GesSIgn.Models;
+using API_GesSIgn.Models.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,15 +57,37 @@ namespace API_GesSIgn.Controllers
 
         // POST: Buildings/Create
         [HttpPost]
-        public async Task<IActionResult> CreateBuilding([FromBody] Building building)
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<IActionResult> CreateBuilding([FromBody] CreateBuildingRequest request)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            var schoolIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SchoolId");
+            if (schoolIdClaim == null || !int.TryParse(schoolIdClaim.Value, out int schoolId))
+            {
+                return Unauthorized("School ID not found in token.");
+            }
+
+            var school = await _context.Schools.FindAsync(schoolId);
+            if (school == null)
+            {
+                return NotFound($"School with ID {schoolId} not found.");
+            }
+
+            var building = new Building
+            {
+                Bulding_City = request.Bulding_City,
+                Bulding_Name = request.Bulding_Name,
+                Bulding_Adress = request.Bulding_Adress,
+                Bulding_School = school
+            };
+
             _context.Buildings.Add(building);
             await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetBuildingDetails), new { id = building.Bulding_Id }, building);
         }
 
