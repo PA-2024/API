@@ -44,17 +44,33 @@ namespace API_GesSIgn.Controllers
             return subjectsHour;
         }
 
-        // POST: api/SubjectsHour
         [HttpPost]
-        public async Task<ActionResult<SubjectsHour>> PostSubjectsHour(CreateSubjectHourRequest subjectsHourUp)
+        public async Task<ActionResult<SubjectsHour>> PostSubjectsHour([FromBody] CreateSubjectHourRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var subject = await _context.Subjects.FindAsync(request.SubjectsHour_Subjects_Id);
+            if (subject == null)
+            {
+                return NotFound($"Subject with ID {request.SubjectsHour_Subjects_Id} not found.");
+            }
+
+            var building = await _context.Buildings.FindAsync(request.SubjectsHour_Building_Id);
+            if (building == null)
+            {
+                return NotFound($"Building with ID {request.SubjectsHour_Building_Id} not found.");
+            }
+
             SubjectsHour subjectsHour = new SubjectsHour
             {
-                SubjectsHour_DateStart = subjectsHourUp.SubjectsHour_DateStart,
-                SubjectsHour_DateEnd = subjectsHourUp.SubjectsHour_DateEnd,
-                SubjectsHour_Room = subjectsHourUp.SubjectsHour_Room,
-                SubjectsHour_Subjects = await _context.Subjects.FindAsync(subjectsHourUp.SubjectsHour_Subjects_Id),
-                SubjectsHour_Bulding = await _context.Buildings.FindAsync(subjectsHourUp.SubjectsHour_Building_Id)   
+                SubjectsHour_DateStart = request.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = request.SubjectsHour_DateEnd,
+                SubjectsHour_Room = request.SubjectsHour_Room,
+                SubjectsHour_Subjects = subject,
+                SubjectsHour_Bulding = building
             };
 
             _context.SubjectsHour.Add(subjectsHour);

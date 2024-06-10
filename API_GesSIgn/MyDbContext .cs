@@ -20,6 +20,8 @@ public class MonDbContext : DbContext
     public DbSet<SubjectsHour> SubjectsHour { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Roles> Roles { get; set; }
+    public DbSet<StudentSubject> StudentSubjects { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -81,5 +83,18 @@ public class MonDbContext : DbContext
             .HasOne(s => s.Sectors_School)
             .WithMany()
             .HasForeignKey(s => s.Sectors_School_Id);
+
+        modelBuilder.Entity<StudentSubject>()
+           .HasKey(ss => new { ss.StudentSubject_StudentId, ss.StudentSubject_SubjectId });
+
+        modelBuilder.Entity<StudentSubject>()
+            .HasOne(ss => ss.StudentSubject_Student)
+            .WithMany()
+            .HasForeignKey(ss => ss.StudentSubject_StudentId);
+
+        modelBuilder.Entity<StudentSubject>()
+            .HasOne(ss => ss.StudentSubject_Subject)
+            .WithMany()
+            .HasForeignKey(ss => ss.StudentSubject_SubjectId);
     }
 }
