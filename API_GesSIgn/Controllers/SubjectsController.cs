@@ -28,8 +28,15 @@ namespace API_GesSIgn.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubjectsdDto>>> GetSubjects()
         {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             var subjects = await _context.Subjects
                 .Include(s => s.Subjects_User)
+                .Where(s => s.Subjects_School_Id == int.Parse(schoolIdClaim))
                 .ToListAsync();
 
             var subjectDtos = subjects.Select(s => new SubjectsdDto
@@ -46,8 +53,15 @@ namespace API_GesSIgn.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Subjects>> GetSubjects(int id)
         {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             var subjects = await _context.Subjects
                 .Include(s => s.Subjects_User)
+                .Where(s => s.Subjects_School_Id == int.Parse(schoolIdClaim))
                 .FirstOrDefaultAsync(s => s.Subjects_Id == id);
 
             if (subjects == null)
