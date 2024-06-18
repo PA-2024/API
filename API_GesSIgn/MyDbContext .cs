@@ -96,5 +96,10 @@ public class MonDbContext : DbContext
             .HasOne(ss => ss.StudentSubject_Subject)
             .WithMany()
             .HasForeignKey(ss => ss.StudentSubject_SubjectId);
+
+        modelBuilder.Entity<Subjects>()
+            .HasOne(s => s.Subjects_School)
+            .WithMany()
+            .HasForeignKey(s => s.Subjects_School_Id);
     }
 }

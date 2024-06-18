@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace API_GesSIgn.Models
 {
     /// <summary>
-    /// Classe des heures de matières
+    /// Classe des heures de cours 
     /// </summary>
     public class SubjectsHour
     {

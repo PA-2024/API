@@ -22,5 +22,15 @@ namespace API_GesSIgn.Models
         /// </summary>
         [ForeignKey("Subjects_User_Id")]
         public User? Subjects_User { get; set; }
+
+
+        [Required]
+        public int Subjects_School_Id { get; set; }
+
+        /// <summary>
+        /// École associée à la matière
+        /// </summary>
+        [ForeignKey("Subjects_School_Id")]
+        public School? Subjects_School { get; set; }
     }
 }

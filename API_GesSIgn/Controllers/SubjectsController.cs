@@ -62,6 +62,12 @@ namespace API_GesSIgn.Controllers
         [HttpPost]
         public async Task<ActionResult<Subjects>> PostSubjects(CreateSubjectRequest request)
         {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
 
             var user = await _context.Users.FindAsync(request.Subjects_User_Id);
             if (user == null)
@@ -71,9 +77,9 @@ namespace API_GesSIgn.Controllers
 
             var subjects = new Subjects
             {
-                Subjects_Id = request.Subjects_Id,
                 Subjects_Name = request.Subjects_Name,
-                Subjects_User = user 
+                Subjects_User = user,
+                Subjects_School_Id = int.Parse(schoolIdClaim)
             };
 
             _context.Subjects.Add(subjects);
@@ -90,6 +96,7 @@ namespace API_GesSIgn.Controllers
             {
                 return BadRequest();
             }
+
             var subjects = await _context.Subjects
                 .Include(s => s.Subjects_User)
                 .FirstOrDefaultAsync(s => s.Subjects_Id == id);
@@ -98,13 +105,17 @@ namespace API_GesSIgn.Controllers
             {
                 return NotFound();
             }
+
             var user = await _context.Users.FindAsync(request.Subjects_User_Id);
             if (user == null)
             {
                 return NotFound($"User with ID {request.Subjects_User_Id} not found.");
             }
+
             subjects.Subjects_Name = request.Subjects_Name;
             subjects.Subjects_User = user;
+
+            // Assuming the School ID should not change, so not updating it here.
 
             _context.Entry(subjects).State = EntityState.Modified;
 
@@ -114,12 +125,18 @@ namespace API_GesSIgn.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                return NotFound("DataBase Problem");
+                if (!SubjectsExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             return NoContent();
         }
-
 
         // DELETE: api/Subjects/5
         [HttpDelete("{id}")]
@@ -141,14 +158,14 @@ namespace API_GesSIgn.Controllers
         {
             return _context.Subjects.Any(e => e.Subjects_Id == id);
         }
-        
+
         /*/ GET: api/SubjectsHour/byDateRange
         [HttpGet("byDateRange")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHourByDateRange(DateTime startDate, DateTime endDate)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            
+
             var subjectsHours = await _context.SubjectsHour
                 .Where(sh => sh.SubjectsHour_DateStart >= startDate && sh.SubjectsHour_DateEnd <= endDate)
                 .Where(sh => _context.Students.Any(p => p.Presence_SubjectsHour_Id == sh.SubjectsHour_Id && p.Presence_User_Id == userId))
