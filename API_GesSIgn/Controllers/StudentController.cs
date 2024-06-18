@@ -13,6 +13,7 @@ namespace API_GesSIgn.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [RoleRequirement("Gestion Ecole")]
     public class StudentController : ControllerBase
     {
         private readonly MonDbContext _context;
@@ -27,9 +28,16 @@ namespace API_GesSIgn.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
         {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             return await _context.Students
                 .Include(s => s.Student_User)
                 .Include(s => s.Student_Sectors)
+                .Where(s => s.Student_User.User_School_Id == int.Parse(schoolIdClaim))
                 .ToListAsync();
         }
 
@@ -37,9 +45,16 @@ namespace API_GesSIgn.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             var student = await _context.Students
                 .Include(s => s.Student_User)
                 .Include(s => s.Student_Sectors)
+                .Where(s => s.Student_User.User_School_Id == int.Parse(schoolIdClaim))
                 .FirstOrDefaultAsync(s => s.Student_Id == id);
 
             if (student == null)
