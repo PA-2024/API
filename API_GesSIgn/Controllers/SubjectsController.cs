@@ -49,9 +49,13 @@ namespace API_GesSIgn.Controllers
             return Ok(subjectDtos);
         }
 
-        // GET: api/Subjects/5
+        /// <summary>
+        /// GET: api/Subjects/5
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Subjects>> GetSubjects(int id)
+        public async Task<ActionResult<SubjectDetailsDto>> GetSubjects(int id)
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
             if (string.IsNullOrEmpty(schoolIdClaim))
@@ -69,8 +73,27 @@ namespace API_GesSIgn.Controllers
                 return NotFound();
             }
 
-            return subjects;
+            var studentSubjects = await _context.StudentSubjects
+                .Include(ss => ss.StudentSubject_Student)
+                    .ThenInclude(student => student.Student_User)
+                .Include(ss => ss.StudentSubject_Student)
+                    .ThenInclude(student => student.Student_Sectors)
+                .Where(ss => ss.StudentSubject_SubjectId == id)
+                .ToListAsync();
+
+            var studentDtos = studentSubjects.Select(ss => StudentSimplifyDto.FromStudent(ss.StudentSubject_Student)).ToList();
+
+            var subjectDetails = new SubjectDetailsDto
+            {
+                Subjects_Id = subjects.Subjects_Id,
+                Subjects_Name = subjects.Subjects_Name,
+                Teacher = UserSimplifyDto.FromUser(subjects.Subjects_User),
+                Students = studentDtos
+            };
+
+            return Ok(subjectDetails);
         }
+
 
         // POST: api/Subjects
         [HttpPost]

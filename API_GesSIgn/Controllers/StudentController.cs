@@ -67,7 +67,6 @@ namespace API_GesSIgn.Controllers
 
         // POST: api/Student
         [HttpPost]
-        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<Student>> PostStudent(StudentRequest student)
         {
             if (student == null && UserController.UserExists(student.Student_User_id, _context) && SectorsController.SectorExist(student.Student_Class_id, _context) )
@@ -138,7 +137,6 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpGet("GetStudentsSchoolByToken/")]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<Student>>> GetStudentsSchoolByToken()
         {
             var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
