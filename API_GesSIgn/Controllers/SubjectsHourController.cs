@@ -159,11 +159,6 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
                 SubjectsHour_Room = sh.SubjectsHour_Room,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
-                Students = _context.StudentSubjects
-                    .Where(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Id)
-                    .Include(ss => ss.StudentSubject_Student)
-                    .Select(ss => StudentSimplifyDto.FromStudent(ss.StudentSubject_Student))
-                    .ToList()
             }).ToList();
 
             return Ok(result);
@@ -197,11 +192,6 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
                 SubjectsHour_Room = sh.SubjectsHour_Room,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
-                Students = _context.StudentSubjects
-                    .Where(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Id)
-                    .Include(ss => ss.StudentSubject_Student)
-                    .Select(ss => StudentSimplifyDto.FromStudent(ss.StudentSubject_Student))
-                    .ToList()
             }).ToList();
 
             return Ok(result);
