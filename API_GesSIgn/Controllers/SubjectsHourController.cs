@@ -5,11 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
 using API_GesSIgn.Models.Request;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using API_GesSIgn.Models.Response;
 
 namespace API_GesSIgn.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SubjectsHourController : ControllerBase
     {
         private readonly MonDbContext _context;
@@ -123,6 +127,84 @@ namespace API_GesSIgn.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+
+        /// <summary>
+        /// Méthode pour récupérer les SubjectsHour pour un étudiant basé sur le token
+        /// </summary>
+        /// <param name="dateRange"></param>
+        /// <returns></returns>
+        [HttpGet("byDateRange")]
+        public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHourByDateRange([FromQuery] DateRangeRequest dateRange)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Student_User_Id == userId);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+
+            var subjectsHours = await _context.SubjectsHour
+                .Include(sh => sh.SubjectsHour_Bulding)
+                .Where(sh => sh.SubjectsHour_DateStart >= dateRange.StartDate && sh.SubjectsHour_DateEnd <= dateRange.EndDate)
+                .Where(sh => _context.StudentSubjects.Any(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Subjects_Id && ss.StudentSubject_StudentId == student.Student_Id))
+                .ToListAsync();
+
+            var result = subjectsHours.Select(sh => new SubjectsHourDetailsDto
+            {
+                SubjectsHour_Id = sh.SubjectsHour_Id,
+                SubjectsHour_DateStart = sh.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
+                SubjectsHour_Room = sh.SubjectsHour_Room,
+                Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
+                Students = _context.StudentSubjects
+                    .Where(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Id)
+                    .Include(ss => ss.StudentSubject_Student)
+                    .Select(ss => StudentSimplifyDto.FromStudent(ss.StudentSubject_Student))
+                    .ToList()
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Méthode pour récupérer les SubjectsHour pour un étudiant basé sur l'ID de l'étudiant
+        /// </summary>
+        /// <param name="studentId"></param>
+        /// <param name="dateRange"></param>
+        /// <returns></returns>
+        [HttpGet("byDateRange/{studentId}")]
+        public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHourByStudentIdAndDateRange(int studentId, [FromQuery] DateRangeRequest dateRange)
+        {
+            var student = await _context.Students.FindAsync(studentId);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+
+            var subjectsHours = await _context.SubjectsHour
+                .Include(sh => sh.SubjectsHour_Bulding)
+                .Where(sh => sh.SubjectsHour_DateStart >= dateRange.StartDate && sh.SubjectsHour_DateEnd <= dateRange.EndDate)
+                .Where(sh => _context.StudentSubjects.Any(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Subjects_Id && ss.StudentSubject_StudentId == student.Student_Id))
+                .ToListAsync();
+
+            var result = subjectsHours.Select(sh => new SubjectsHourDetailsDto
+            {
+                SubjectsHour_Id = sh.SubjectsHour_Id,
+                SubjectsHour_DateStart = sh.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
+                SubjectsHour_Room = sh.SubjectsHour_Room,
+                Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
+                Students = _context.StudentSubjects
+                    .Where(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Id)
+                    .Include(ss => ss.StudentSubject_Student)
+                    .Select(ss => StudentSimplifyDto.FromStudent(ss.StudentSubject_Student))
+                    .ToList()
+            }).ToList();
+
+            return Ok(result);
         }
 
         private bool SubjectsHourExists(int id)

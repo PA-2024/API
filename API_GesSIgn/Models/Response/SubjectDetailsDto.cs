@@ -13,6 +13,13 @@ namespace API_GesSIgn.Models.Response
         public List<StudentSimplifyDto>? Students { get; set; }
     }
 
+    public class SubjectDetailsWithOutStudentSimplifyDto
+    {
+        public int Subjects_Id { get; set; }
+        public string Subjects_Name { get; set; }
+        public UserSimplifyDto Teacher { get; set; }
+    }
+
     /// <summary>
     /// Élève simplifié 
     /// </summary>
@@ -31,6 +38,41 @@ namespace API_GesSIgn.Models.Response
                 Student_Id = student.Student_Id,
                 Student_Sectors = student.Student_Sectors,
                 Student_User = UserSimplifyDto.FromUser(student.Student_User)
+            };
+        }
+    }
+
+    /// <summary>
+    /// Détails des heures de matières
+    /// </summary>
+    public class SubjectsHourDetailsDto
+    {
+        public int SubjectsHour_Id { get; set; }
+        public DateTime SubjectsHour_DateStart { get; set; }
+        public DateTime SubjectsHour_DateEnd { get; set; }
+        public string SubjectsHour_Room { get; set; }
+        public BuildingDto Building { get; set; }
+        public SubjectDetailsWithOutStudentSimplifyDto Subject { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BuildingDto
+    {
+        public int Building_Id { get; set; }
+        public string Building_Name { get; set; }
+        public string Building_City { get; set; }
+        public string Building_Address { get; set; }
+
+        public static BuildingDto FromBuilding(Building building)
+        {
+            return new BuildingDto
+            {
+                Building_Id = building.Bulding_Id,
+                Building_Name = building.Bulding_Name,
+                Building_City = building.Bulding_City,
+                Building_Address = building.Bulding_Adress
             };
         }
     }
