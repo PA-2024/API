@@ -16,6 +16,11 @@ namespace API_GesSIgn.Models
         [Required]
         public int Presence_Student_Id { get; set; }
 
+
+        public DateTime Presence_ScanDate { get; set; }
+
+        public string? Presence_ScanInfo { get; set; }
+
         /// <summary>
         /// Eleve
         /// </summary>

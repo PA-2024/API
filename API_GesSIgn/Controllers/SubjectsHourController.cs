@@ -80,6 +80,26 @@ namespace API_GesSIgn.Controllers
             _context.SubjectsHour.Add(subjectsHour);
             await _context.SaveChangesAsync();
 
+            // Créer des présences pour chaque étudiant inscrit au cours
+            var studentsEnrolled = await _context.StudentSubjects
+                .Where(ss => ss.StudentSubject_SubjectId == subject.Subjects_Id)
+                .Select(ss => ss.StudentSubject_StudentId)
+                .ToListAsync();
+
+            foreach (var studentId in studentsEnrolled)
+            {
+                Presence presence = new Presence
+                {
+                    Presence_Student_Id = studentId,
+                    Presence_SubjectsHour_Id = subjectsHour.SubjectsHour_Id,
+                    Presence_Is = false 
+                };
+
+                _context.Presences.Add(presence);
+            }
+
+            await _context.SaveChangesAsync();
+
             return CreatedAtAction("GetSubjectsHour", new { id = subjectsHour.SubjectsHour_Id }, subjectsHour);
         }
 
