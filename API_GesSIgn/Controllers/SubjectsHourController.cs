@@ -136,7 +136,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("byDateRange")]
-        public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHourByDateRange([FromQuery] DateRangeRequest dateRange)
+        public async Task<ActionResult<IEnumerable<SubjectsHourDetailsDto>>> GetSubjectsHourByDateRange([FromQuery] DateRangeRequest dateRange)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
@@ -148,6 +148,8 @@ namespace API_GesSIgn.Controllers
 
             var subjectsHours = await _context.SubjectsHour
                 .Include(sh => sh.SubjectsHour_Bulding)
+                .Include(sh => sh.SubjectsHour_Subjects)
+                .ThenInclude(s => s.Subjects_User)
                 .Where(sh => sh.SubjectsHour_DateStart >= dateRange.StartDate && sh.SubjectsHour_DateEnd <= dateRange.EndDate)
                 .Where(sh => _context.StudentSubjects.Any(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Subjects_Id && ss.StudentSubject_StudentId == student.Student_Id))
                 .ToListAsync();
@@ -159,6 +161,12 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
                 SubjectsHour_Room = sh.SubjectsHour_Room,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
+                Subject = new SubjectDetailsWithOutStudentSimplifyDto
+                {
+                    Subjects_Id = sh.SubjectsHour_Subjects.Subjects_Id,
+                    Subjects_Name = sh.SubjectsHour_Subjects.Subjects_Name,
+                    Teacher = UserSimplifyDto.FromUser(sh.SubjectsHour_Subjects.Subjects_User)
+                }
             }).ToList();
 
             return Ok(result);
@@ -180,10 +188,12 @@ namespace API_GesSIgn.Controllers
             }
 
             var subjectsHours = await _context.SubjectsHour
-                .Include(sh => sh.SubjectsHour_Bulding)
-                .Where(sh => sh.SubjectsHour_DateStart >= dateRange.StartDate && sh.SubjectsHour_DateEnd <= dateRange.EndDate)
-                .Where(sh => _context.StudentSubjects.Any(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Subjects_Id && ss.StudentSubject_StudentId == student.Student_Id))
-                .ToListAsync();
+                 .Include(sh => sh.SubjectsHour_Bulding)
+                 .Include(sh => sh.SubjectsHour_Subjects)
+                 .ThenInclude(s => s.Subjects_User)
+                 .Where(sh => sh.SubjectsHour_DateStart >= dateRange.StartDate && sh.SubjectsHour_DateEnd <= dateRange.EndDate)
+                 .Where(sh => _context.StudentSubjects.Any(ss => ss.StudentSubject_SubjectId == sh.SubjectsHour_Subjects_Id && ss.StudentSubject_StudentId == student.Student_Id))
+                 .ToListAsync();
 
             var result = subjectsHours.Select(sh => new SubjectsHourDetailsDto
             {
@@ -192,11 +202,17 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
                 SubjectsHour_Room = sh.SubjectsHour_Room,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
+                Subject = new SubjectDetailsWithOutStudentSimplifyDto
+                {
+                    Subjects_Id = sh.SubjectsHour_Subjects.Subjects_Id,
+                    Subjects_Name = sh.SubjectsHour_Subjects.Subjects_Name,
+                    Teacher = UserSimplifyDto.FromUser(sh.SubjectsHour_Subjects.Subjects_User)
+                }
             }).ToList();
 
             return Ok(result);
         }
-
+        
         private bool SubjectsHourExists(int id)
         {
             return _context.SubjectsHour.Any(e => e.SubjectsHour_Id == id);
