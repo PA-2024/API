@@ -192,6 +192,7 @@ namespace API_GesSIgn.Controllers
             return Ok(result);
         }
 
+
         /// <summary>
         /// Méthode pour récupérer les SubjectsHour pour un étudiant basé sur l'ID de l'étudiant
         /// </summary>

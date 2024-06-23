@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
+using API_GesSIgn.Models.Response;
+using System.Security.Claims;
 
 namespace API_GesSIgn.Controllers
 {
@@ -102,6 +104,85 @@ namespace API_GesSIgn.Controllers
 
             return NoContent();
         }
+
+        /// <summary>
+        /// Méthode pour récupérer les présences non confirmées (Presence_Is = false) pour un étudiant basé sur le token.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("unconfirmed")]
+        [RoleRequirement("Eleve")]
+        public async Task<ActionResult<IEnumerable<SubjectsHourDetailsDto>>> GetUnconfirmedPresences()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var currentDateTime = DateTime.UtcNow.AddMinutes(15);
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Student_User_Id == userId);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+
+            var presences = await _context.Presences
+                .Include(p => p.Presence_SubjectsHour)
+                .ThenInclude(sh => sh.SubjectsHour_Subjects)
+                .ThenInclude(s => s.Subjects_User)
+                .Include(p => p.Presence_SubjectsHour.SubjectsHour_Bulding)
+                .Where(p => p.Presence_Student_Id == student.Student_Id &&
+                            !p.Presence_Is &&
+                            p.Presence_SubjectsHour.SubjectsHour_DateEnd <= currentDateTime)
+                .ToListAsync();
+
+            var result = presences.Select(p => new SubjectsHourDetailsDto
+            {
+                SubjectsHour_Id = p.Presence_SubjectsHour.SubjectsHour_Id,
+                SubjectsHour_DateStart = p.Presence_SubjectsHour.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = p.Presence_SubjectsHour.SubjectsHour_DateEnd,
+                SubjectsHour_Room = p.Presence_SubjectsHour.SubjectsHour_Room,
+                Building = BuildingDto.FromBuilding(p.Presence_SubjectsHour.SubjectsHour_Bulding),
+                Subject = new SubjectDetailsWithOutStudentSimplifyDto
+                {
+                    Subjects_Id = p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Id,
+                    Subjects_Name = p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Name,
+                    Teacher = UserSimplifyDto.FromUser(p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User)
+                }
+            }).ToList();
+
+            return Ok(result);
+        }
+
+
+        /// <summary>
+        /// Méthode pour récupérer le résumé des présences pour un étudiant basé sur le token.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("attendance-summary")]
+        public async Task<ActionResult<AttendanceSummaryDto>> GetAttendanceSummary()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Student_User_Id == userId);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+
+            var presences = await _context.Presences
+                .Where(p => p.Presence_Student_Id == student.Student_Id)
+                .ToListAsync();
+
+            var total_Present = presences.Count(p => p.Presence_Is);
+            var total_Missed = presences.Count(p => !p.Presence_Is && p.Presence_SubjectsHour.SubjectsHour_DateEnd <= DateTime.UtcNow.AddMinutes(15));
+
+            var summary = new AttendanceSummaryDto
+            {
+                Total_Present = total_Present,
+                Total_Missed = total_Missed
+            };
+
+            return Ok(summary);
+        }
+
+
 
         private bool PresenceExists(int id)
         {
