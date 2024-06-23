@@ -56,15 +56,14 @@ builder.Services.AddSwaggerGen(swagger =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhostOrigins",
+    options.AddPolicy("AllowAllLocal",
         builder =>
         {
             builder
-                .SetIsOriginAllowedToAllowWildcardSubdomains()
-                .WithOrigins("http://localhost:*", "https://localhost:*")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+                .AllowAnyOrigin() // Permet toutes les origines
+                .AllowAnyMethod() // Permet toutes les méthodes HTTP
+                .AllowAnyHeader() // Permet tous les en-têtes
+                .AllowCredentials(); // Permet les cookies/credentials
         });
 });
 
@@ -135,7 +134,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowLocalhostOrigins");
+app.UseCors("AllowAllLocal");
 
 app.UseAuthentication();
 app.UseAuthorization();
