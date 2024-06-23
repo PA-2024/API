@@ -167,6 +167,7 @@ namespace API_GesSIgn.Controllers
             }
 
             var presences = await _context.Presences
+                .Include(p => p.Presence_SubjectsHour)
                 .Where(p => p.Presence_Student_Id == student.Student_Id)
                 .ToListAsync();
 
