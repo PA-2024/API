@@ -56,14 +56,14 @@ builder.Services.AddSwaggerGen(swagger =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllLocal",
+    options.AddPolicy("AllowLocalhostOrigins",
         builder =>
         {
             builder
-                .AllowAnyOrigin() // Permet toutes les origines
-                .AllowAnyMethod() // Permet toutes les méthodes HTTP
-                .AllowAnyHeader() // Permet tous les en-têtes
-                .AllowCredentials(); // Permet les cookies/credentials
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowedToAllowWildcardSubdomains();
         });
 });
 
@@ -134,7 +134,22 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAllLocal");
+
+app.UseCors("AllowLocalhostOrigins");
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        context.Response.StatusCode = 204;
+        return;
+    }
+    await next();
+});
+
 
 app.UseAuthentication();
 app.UseAuthorization();
