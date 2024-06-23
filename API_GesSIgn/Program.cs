@@ -59,11 +59,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("MyAllowSpecificOrigins",
         builder =>
         {
-            builder.WithOrigins("http://localhost:8080", "https://localhost:8080", "http://localhost:54050")
-                   .AllowAnyHeader()
-                   .AllowAnyMethod();
+            builder.SetIsOriginAllowedToAllowWildcardSubdomains()
+                .WithOrigins("http://localhost:*", "https://localhost:*")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
-});
 
 var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
 
