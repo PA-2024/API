@@ -91,21 +91,18 @@ namespace API_GesSIgn.Controllers
             return CreatedAtAction(nameof(GetBuildingDetails), new { id = building.Bulding_Id }, building);
         }
 
-        // PUT: Buildings/Edit/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBuilding(int id, [FromBody] Building building)
+        public async Task<IActionResult> UpdateBuilding(int id, [FromBody] UpdateBuildingRequest request)
         {
-            if (id != building.Bulding_Id)
+            var building = await _context.Buildings.FindAsync(id);
+            if (building == null)
             {
-                return BadRequest("Building ID mismatch");
+                return NotFound();
             }
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _context.Entry(building).State = EntityState.Modified;
+            building.Bulding_City = request.Bulding_City;
+            building.Bulding_Name = request.Bulding_Name;
+            building.Bulding_Adress = request.Bulding_Adress;
 
             try
             {
