@@ -180,6 +180,7 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateStart = sh.SubjectsHour_DateStart,
                 SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
                 SubjectsHour_Room = sh.SubjectsHour_Room,
+                SubjectsHour_TeacherComment = sh.SubjectsHour_TeacherComment,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
                 Subject = new SubjectDetailsWithOutStudentSimplifyDto
                 {
