@@ -85,17 +85,15 @@ namespace API_GesSIgn.Controllers
             return CreatedAtAction("GetStudent", new { id = result.Student_Id }, student);
         }
 
-        // PUT: api/Student/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutStudent(int id, Student student)
+        public async Task<IActionResult> PutStudent(int id, [FromBody] UpdateStudentSectorRequest request)
         {
-            if (id != student.Student_Id)
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
             {
-                return BadRequest();
+                return NotFound();
             }
-
-            _context.Entry(student).State = EntityState.Modified;
-
+            student.Student_Sector_Id = request.Student_Sector_Id;
             try
             {
                 await _context.SaveChangesAsync();
@@ -111,7 +109,6 @@ namespace API_GesSIgn.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 

@@ -183,6 +183,68 @@ namespace API_GesSIgn.Controllers
             return Ok(summary);
         }
 
+        /*
+            // GET: api/Presences/SubjectsHour/5
+        [HttpGet("SubjectsHour/{id}")]
+        public async Task<ActionResult<SubjectsHourDetailsWithStudentsDto>> GetSubjectsHourWithStudents(int id)
+        {
+            var subjectsHour = await _context.SubjectsHour
+                .Include(sh => sh.SubjectsHour_Bulding)
+                .Include(sh => sh.SubjectsHour_Subjects)
+                    .ThenInclude(s => s.Subjects_User)
+                .FirstOrDefaultAsync(sh => sh.SubjectsHour_Id == id);
+
+            if (subjectsHour == null)
+            {
+                return NotFound();
+            }
+
+            var students = await _context.StudentSubjects
+                .Where(ss => ss.StudentSubject_SubjectId == subjectsHour.SubjectsHour_Subjects.Subjects_Id)
+                .Include(ss => ss.StudentSubject_Student)
+                    .ThenInclude(s => s.Student_User)
+                .Select(ss => new StudentIsPresent
+                {
+                    Student_Id = ss.StudentSubject_Student.Student_Id,
+                    Student_User = new UserSimplifyDto
+                    {
+                        User_Id = ss.StudentSubject_Student.Student_User.User_Id,
+                        User_email = ss.StudentSubject_Student.Student_User.User_email,
+                        User_lastname = ss.StudentSubject_Student.Student_User.User_lastname,
+                        User_firstname = ss.StudentSubject_Student.Student_User.User_firstname,
+                        User_num = ss.StudentSubject_Student.Student_User.User_num
+                    },
+                    IsPresent = _context.Presences.Any(p => p.Presence_Student_Id == ss.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id && p.Presence_Is)
+                })
+                .ToListAsync();
+
+            var result = new SubjectsHourDetailsWithStudentsDto
+            {
+                SubjectsHour_Id = subjectsHour.SubjectsHour_Id,
+                SubjectsHour_DateStart = subjectsHour.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
+                SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
+
+                Subject = new SubjectDetailsWithOutStudentSimplifyDto
+                {
+                    Subjects_Id = subjectsHour.SubjectsHour_Subjects.Subjects_Id,
+                    Subjects_Name = subjectsHour.SubjectsHour_Subjects.Subjects_Name,
+                    Teacher = new UserSimplifyDto
+                    {
+                        User_Id = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id,
+                        User_email = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_email,
+                        User_lastname = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_lastname,
+                        User_firstname = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_firstname,
+                        User_num = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_num
+                    }
+                },
+                Students = students
+            };
+
+            return Ok(result);
+        }
+        */
+
 
 
         private bool PresenceExists(int id)
