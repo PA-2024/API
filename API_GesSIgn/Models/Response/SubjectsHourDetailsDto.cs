@@ -52,7 +52,7 @@
                 SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
                 SubjectsHour_TeacherComment = subjectsHour.SubjectsHour_TeacherComment,
-                SubjectsHour_Subject = SubjectsHourSimplify.FromSubject(subjectsHour.SubjectsHour_Subjects),
+                SubjectsHour_Subject = SubjectsSimplify.FromSubjects(subjectsHour.SubjectsHour_Subjects),
                 Building = BuildingDto.FromBuilding(subjectsHour.SubjectsHour_Bulding),
             };
         }   
