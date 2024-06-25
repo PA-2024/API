@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace API_GesSIgn.Models.Response
 {
     /// <summary>
     /// Matière détaillée avec les élèves inscrits
     /// </summary>
-    public class SubjectDetailsDto
+    public class SubjectDetailsListStudent
     {
         public int Subjects_Id { get; set; }
         public string Subjects_Name { get; set; }
@@ -13,21 +14,29 @@ namespace API_GesSIgn.Models.Response
         public List<StudentSimplifyDto>? Students { get; set; }
     }
 
-    public class SubjectDetailsWithOutStudentSimplifyDto
+    public class SubjectsdDto
     {
+        [Key]
         public int Subjects_Id { get; set; }
-        public string Subjects_Name { get; set; }
-        public UserSimplifyDto Teacher { get; set; }
 
-        public static SubjectDetailsWithOutStudentSimplifyDto FromSubject(Subjects subject)
+        [Required]
+        public string Subjects_Name { get; set; }
+
+        [Required]
+        public UserSimplifyDto? Teacher { get; set; }
+
+        public static SubjectsdDto FromSubjects(Subjects subjects)
         {
-            return new SubjectDetailsWithOutStudentSimplifyDto
+            SubjectsdDto res = new SubjectsdDto();
+            res.Subjects_Id = subjects.Subjects_Id;
+            res.Subjects_Name = subjects.Subjects_Name;
+            if (subjects.Subjects_User != null)
             {
-                Subjects_Id = subject.Subjects_Id,
-                Subjects_Name = subject.Subjects_Name,
-                Teacher = UserSimplifyDto.FromUser(subject.Subjects_User)
-            };
+                res.Teacher = UserSimplifyDto.FromUser(subjects.Subjects_User);
+            }
+            return res;
         }
+
     }
 
     /// <summary>
@@ -66,7 +75,7 @@ namespace API_GesSIgn.Models.Response
         public DateTime SubjectsHour_DateEnd { get; set; }
         public string SubjectsHour_Room { get; set; }
         public BuildingDto Building { get; set; }
-        public SubjectDetailsWithOutStudentSimplifyDto Subject { get; set; }
+        public SubjectsdDto Subject { get; set; }
         public List<StudentIsPresent> Students { get; set; }
     }
 }

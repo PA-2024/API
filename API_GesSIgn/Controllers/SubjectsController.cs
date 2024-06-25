@@ -55,7 +55,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<SubjectDetailsDto>> GetSubjects(int id)
+        public async Task<ActionResult<SubjectDetailsListStudent>> GetSubjects(int id)
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
             if (string.IsNullOrEmpty(schoolIdClaim))
@@ -83,7 +83,7 @@ namespace API_GesSIgn.Controllers
 
             var studentDtos = studentSubjects.Select(ss => StudentSimplifyDto.FromStudent(ss.StudentSubject_Student)).ToList();
 
-            var subjectDetails = new SubjectDetailsDto
+            var subjectDetails = new SubjectDetailsListStudent
             {
                 Subjects_Id = subjects.Subjects_Id,
                 Subjects_Name = subjects.Subjects_Name,

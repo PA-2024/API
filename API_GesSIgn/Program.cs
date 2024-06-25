@@ -1,19 +1,20 @@
 using API_GesSIgn.Helpers;
 using API_GesSIgn.Models;
+using API_GesSIgn.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Services;
 using System.Text;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Ajoutez services au conteneur.
-//builder.Services.AddIdentity<User, IdentityRole>(); // je ne suis pas sur de cette ligne
-
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -117,23 +118,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
-
 builder.Services.AddDbContext<MonDbContext>(options =>
     options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
 
+builder.Services.AddHostedService<CodeSendingService>();
 
 var app = builder.Build();
 
-// Configurer le pipeline de requêtes HTTP. a changer par la suite //TODO
-//if (app.Environment.IsDevelopment())
-//{
 app.UseSwagger();
 app.UseSwaggerUI();
-//}
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
 
 app.UseCors("AllowLocalhostOrigins");
 
@@ -150,11 +147,14 @@ app.Use(async (context, next) =>
     await next();
 });
 
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    _ = endpoints.MapControllers();
+    _ = endpoints.MapHub<PresenceHub>("/presenceHub");
+});
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run("http://*:" + port);

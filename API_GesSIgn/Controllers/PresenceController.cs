@@ -139,12 +139,7 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = p.Presence_SubjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = p.Presence_SubjectsHour.SubjectsHour_Room,
                 Building = BuildingDto.FromBuilding(p.Presence_SubjectsHour.SubjectsHour_Bulding),
-                Subject = new SubjectDetailsWithOutStudentSimplifyDto
-                {
-                    Subjects_Id = p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Id,
-                    Subjects_Name = p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Name,
-                    Teacher = UserSimplifyDto.FromUser(p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User)
-                }
+                Subject = SubjectsdDto.FromSubjects(p.Presence_SubjectsHour.SubjectsHour_Subjects),
             }).ToList();
 
             return Ok(result);
@@ -225,19 +220,7 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateStart = subjectsHour.SubjectsHour_DateStart,
                 SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
-                Subject = new SubjectDetailsWithOutStudentSimplifyDto
-                {
-                    Subjects_Id = subjectsHour.SubjectsHour_Subjects.Subjects_Id,
-                    Subjects_Name = subjectsHour.SubjectsHour_Subjects.Subjects_Name,
-                    Teacher = new UserSimplifyDto
-                    {
-                        User_Id = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id,
-                        User_email = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_email,
-                        User_lastname = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_lastname,
-                        User_firstname = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_firstname,
-                        User_num = subjectsHour.SubjectsHour_Subjects.Subjects_User.User_num
-                    }
-                },
+                Subject = SubjectsdDto.FromSubjects(subjectsHour.SubjectsHour_Subjects),
                 Students = students
             };
 
