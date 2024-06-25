@@ -250,10 +250,10 @@ namespace API_GesSIgn.Controllers
                             sh.SubjectsHour_DateEnd <= dateRange.EndDate)
                 .ToListAsync();
             try {
-            var result = subjectsHours.Select(sh => SubjectsHourSimplify.FromSubjectsHour(sh)).ToList();
-            return Ok(result);
+                var result = subjectsHours.Select(sh => SubjectsHourSimplify.FromSubjectsHour(sh)).ToList();
+                return Ok(result);
             }
-            catch (System.Exception ex) {
+            catch (Exception ex) {
                 return StatusCode(500, "Une erreur s'est produite lors de la récupération des cours." + ex.Message);
             }
         }

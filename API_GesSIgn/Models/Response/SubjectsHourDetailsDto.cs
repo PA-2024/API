@@ -41,7 +41,7 @@
         public string? SubjectsHour_Room { get; set; }
         public string? SubjectsHour_TeacherComment { get; set; }
         public BuildingDto Building { get; set; }
-        public SubjectDetailsWithOutStudentSimplifyDto SubjectsHour_Subject { get; set; }
+        public SubjectsSimplify SubjectsHour_Subject { get; set; }
 
         public static SubjectsHourSimplify FromSubjectsHour(SubjectsHour subjectsHour)
         {
@@ -52,7 +52,7 @@
                 SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
                 SubjectsHour_TeacherComment = subjectsHour.SubjectsHour_TeacherComment,
-                SubjectsHour_Subject = SubjectDetailsWithOutStudentSimplifyDto.FromSubject(subjectsHour.SubjectsHour_Subjects),
+                SubjectsHour_Subject = SubjectsHourSimplify.FromSubject(subjectsHour.SubjectsHour_Subjects),
                 Building = BuildingDto.FromBuilding(subjectsHour.SubjectsHour_Bulding),
             };
         }   
