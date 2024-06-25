@@ -145,12 +145,53 @@ namespace API_GesSIgn.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Méthode pour récupérer les présences non confirmées (Presence_Is = false) pour un étudiant basé sur le token.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("OneDay")]
+        [RoleRequirement("Eleve")]
+        public async Task<ActionResult<IEnumerable<SubjectsHourSimplyWithPrescense>>> GetalllPresences()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var dayDate = DateTime.UtcNow;
+            var dayStart = new DateTime(dayDate.Year, dayDate.Month, dayDate.Day, 0, 0, 0);
+            var dayEnd = new DateTime(dayDate.Year, dayDate.Month, dayDate.Day, 23, 59, 59);
+
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Student_User_Id == userId);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+
+            var presences = await _context.Presences
+                .Include(p => p.Presence_SubjectsHour)
+                .ThenInclude(sh => sh.SubjectsHour_Subjects)
+                .ThenInclude(s => s.Subjects_User)
+                .Where(p => p.Presence_Student_Id == student.Student_Id &&
+                            p.Presence_SubjectsHour.SubjectsHour_DateEnd <= dayEnd && p.Presence_SubjectsHour.SubjectsHour_DateStart >= dayStart)
+                .ToListAsync();
+
+            var result = presences.Select(p => new SubjectsHourSimplyWithPrescense
+            {
+                SubjectsHour_Id = p.Presence_SubjectsHour.SubjectsHour_Id,
+                SubjectsHour_DateStart = p.Presence_SubjectsHour.SubjectsHour_DateStart,
+                StudentIsPresent = p.Presence_Is,
+                SubjectsHour_Subject = SubjectsdDto.FromSubjects(p.Presence_SubjectsHour.SubjectsHour_Subjects),
+            }).ToList();
+
+            return Ok(result);
+        }
+
 
         /// <summary>
         /// Méthode pour récupérer le résumé des présences pour un étudiant basé sur le token.
         /// </summary>
         /// <returns></returns>
         [HttpGet("attendance-summary")]
+        [RoleRequirement("Eleve")]
         public async Task<ActionResult<AttendanceSummaryDto>> GetAttendanceSummary()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -177,6 +218,8 @@ namespace API_GesSIgn.Controllers
 
             return Ok(summary);
         }
+
+
 
 
         // GET: api/Presences/SubjectsHour/5

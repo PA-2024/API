@@ -1,4 +1,6 @@
-﻿namespace API_GesSIgn.Models.Response
+﻿using NuGet.Protocol.Plugins;
+
+namespace API_GesSIgn.Models.Response
 {
     /// <summary>
     /// Détails des heures de matières 
@@ -52,4 +54,48 @@
             };
         }   
     }
+
+    /// <summary>
+    /// SubjectsHour avec l'information d'un élèves sur leur presence
+    /// </summary>
+    public class SubjectsHourSimplyWithPrescense
+    {
+        public int SubjectsHour_Id { get; set; }
+
+        public DateTime SubjectsHour_DateStart { get; set; } 
+
+        public DateTime SubjectsHour_DateEnd { get; set; }  
+
+        public SubjectsdDto SubjectsHour_Subject { get; set; }
+
+        public bool StudentIsPresent { get; set; }
+
+        public static SubjectsHourSimplyWithPrescense FromSubjectsHour(SubjectsHour subjectsHour, bool isPresent)
+        {
+            return new SubjectsHourSimplyWithPrescense
+            {
+                SubjectsHour_Id = subjectsHour.SubjectsHour_Id,
+                SubjectsHour_DateStart = subjectsHour.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
+                SubjectsHour_Subject = SubjectsdDto.FromSubjects(subjectsHour.SubjectsHour_Subjects),
+                StudentIsPresent = isPresent
+            };
+        }   
+    }
+
+
+    /// <summary>
+    /// SubjectsHour avec l'information des élèves sur leur presence
+    /// </summary>
+    public class SubjectsHourDetailsWithStudentsDto
+    {
+        public int SubjectsHour_Id { get; set; }
+        public DateTime SubjectsHour_DateStart { get; set; }
+        public DateTime SubjectsHour_DateEnd { get; set; }
+        public string SubjectsHour_Room { get; set; }
+        public BuildingDto Building { get; set; }
+        public SubjectsdDto Subject { get; set; }
+        public List<StudentIsPresent> Students { get; set; }
+    }
+    
 }

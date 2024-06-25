@@ -68,14 +68,4 @@ namespace API_GesSIgn.Models.Response
         public bool IsPresent { get; set; }
     }
 
-    public class SubjectsHourDetailsWithStudentsDto
-    {
-        public int SubjectsHour_Id { get; set; }
-        public DateTime SubjectsHour_DateStart { get; set; }
-        public DateTime SubjectsHour_DateEnd { get; set; }
-        public string SubjectsHour_Room { get; set; }
-        public BuildingDto Building { get; set; }
-        public SubjectsdDto Subject { get; set; }
-        public List<StudentIsPresent> Students { get; set; }
-    }
 }
