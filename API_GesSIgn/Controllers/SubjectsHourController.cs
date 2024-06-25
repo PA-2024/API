@@ -182,12 +182,7 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_Room = sh.SubjectsHour_Room,
                 SubjectsHour_TeacherComment = sh.SubjectsHour_TeacherComment,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
-                Subject = new SubjectDetailsWithOutStudentSimplifyDto
-                {
-                    Subjects_Id = sh.SubjectsHour_Subjects.Subjects_Id,
-                    Subjects_Name = sh.SubjectsHour_Subjects.Subjects_Name,
-                    Teacher = UserSimplifyDto.FromUser(sh.SubjectsHour_Subjects.Subjects_User)
-                }
+                Subject = SubjectsdDto.FromSubjects(sh.SubjectsHour_Subjects),
             }).ToList();
 
             return Ok(result);
@@ -224,12 +219,7 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = sh.SubjectsHour_DateEnd,
                 SubjectsHour_Room = sh.SubjectsHour_Room,
                 Building = BuildingDto.FromBuilding(sh.SubjectsHour_Bulding),
-                Subject = new SubjectDetailsWithOutStudentSimplifyDto
-                {
-                    Subjects_Id = sh.SubjectsHour_Subjects.Subjects_Id,
-                    Subjects_Name = sh.SubjectsHour_Subjects.Subjects_Name,
-                    Teacher = UserSimplifyDto.FromUser(sh.SubjectsHour_Subjects.Subjects_User)
-                }
+                Subject = SubjectsdDto.FromSubjects(sh.SubjectsHour_Subjects),
             }).ToList();
 
             return Ok(result);
