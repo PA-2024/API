@@ -183,9 +183,9 @@ namespace API_GesSIgn.Controllers
             return Ok(summary);
         }
 
-        
-       // GET: api/Presences/SubjectsHour/5
-       [RoleRequirement("Professeur")]
+
+        // GET: api/Presences/SubjectsHour/5
+        [RoleRequirement("Professeur")]
         [HttpGet("SubjectsHourWithPresences/{id}")]
         public async Task<ActionResult<SubjectsHourDetailsWithStudentsDto>> GetSubjectsHourWithStudents(int id)
         {
