@@ -183,9 +183,10 @@ namespace API_GesSIgn.Controllers
             return Ok(summary);
         }
 
-        /*
-            // GET: api/Presences/SubjectsHour/5
-        [HttpGet("SubjectsHour/{id}")]
+        
+       // GET: api/Presences/SubjectsHour/5
+       [RoleRequirement("Eleve")]
+        [HttpGet("SubjectsHourWithPresences/{id}")]
         public async Task<ActionResult<SubjectsHourDetailsWithStudentsDto>> GetSubjectsHourWithStudents(int id)
         {
             var subjectsHour = await _context.SubjectsHour
@@ -224,7 +225,6 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateStart = subjectsHour.SubjectsHour_DateStart,
                 SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
-
                 Subject = new SubjectDetailsWithOutStudentSimplifyDto
                 {
                     Subjects_Id = subjectsHour.SubjectsHour_Subjects.Subjects_Id,
@@ -243,7 +243,7 @@ namespace API_GesSIgn.Controllers
 
             return Ok(result);
         }
-        */
+
 
 
 
