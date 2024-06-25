@@ -18,6 +18,16 @@ namespace API_GesSIgn.Models.Response
         public int Subjects_Id { get; set; }
         public string Subjects_Name { get; set; }
         public UserSimplifyDto Teacher { get; set; }
+
+        public static SubjectDetailsWithOutStudentSimplifyDto FromSubject(Subjects subject)
+        {
+            return new SubjectDetailsWithOutStudentSimplifyDto
+            {
+                Subjects_Id = subject.Subjects_Id,
+                Subjects_Name = subject.Subjects_Name,
+                Teacher = UserSimplifyDto.FromUser(subject.Subjects_User)
+            };
+        }
     }
 
     /// <summary>
