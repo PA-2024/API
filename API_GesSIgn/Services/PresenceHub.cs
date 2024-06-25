@@ -1,83 +1,89 @@
-﻿using API_GesSIgn.Models;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API_GesSIgn.Models;
+
 
 namespace Services
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public class PresenceHub : Hub
     {
-        private static ConcurrentDictionary<int, string> SubjectHourCodes = new ConcurrentDictionary<int, string>();
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly MonDbContext _context;
 
-        public PresenceHub(IServiceScopeFactory serviceScopeFactory)
+        public PresenceHub(MonDbContext context)
         {
-            _serviceScopeFactory = serviceScopeFactory;
+            _context = context;
         }
 
         public async Task JoinRoom(int subjectHourId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, subjectHourId.ToString());
+            try
+            {
+                PresenceHub.WriteToFile("log.txt", $"JoinRoom called with subjectHourId: {subjectHourId}");
+                await Groups.AddToGroupAsync(Context.ConnectionId, subjectHourId.ToString());
+            }
+            catch (Exception ex)
+            {
+                PresenceHub.WriteToFile("log.txt", $"Error in JoinRoom: {ex.Message}");
+            }
+            PresenceHub.WriteToFile("log.txt", $"Successfully joined room: {subjectHourId}");
         }
 
         public async Task SendCode(int subjectHourId)
         {
-            var code = GenerateRandomCode(15);
-            SubjectHourCodes[subjectHourId] = code;
+            string code = GenerateCode();
             await Clients.Group(subjectHourId.ToString()).SendAsync("ReceiveCode", code);
+            PresenceHub.WriteToFile("log.txt", $"SendCode called with code: {code}");
         }
 
-        public async Task<bool> ValidatePresence(int subjectHourId, string code, int studentId)
+        public async Task ValidatePresence(int subjectHourId, string code, int studentId)
         {
-            if (SubjectHourCodes.TryGetValue(subjectHourId, out var validCode) && validCode == code)
+            var presence = _context.Presences
+                .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
+
+            if (presence != null)
             {
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-                    var context = scope.ServiceProvider.GetRequiredService<MonDbContext>();
-
-                    // recherche de la présence
-                    var presence = await context.Presences
-                        .FirstOrDefaultAsync(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
-
-                    if (presence != null)
-                    {
-                        presence.Presence_Is = true;
-                        presence.Presence_ScanDate = DateTime.Now;
-
-                        await context.SaveChangesAsync();
-                    }
-                    else
-                    {                      
-                        presence = new Presence
-                        {
-                            Presence_Student_Id = studentId,
-                            Presence_SubjectsHour_Id = subjectHourId,
-                            Presence_Is = true,
-                            Presence_ScanDate = DateTime.Now
-                        };
-
-                        context.Presences.Add(presence);
-                        await context.SaveChangesAsync();
-                    }
-                }
-
-                return true;
+                presence.Presence_Is = true;
+                presence.Presence_ScanDate = DateTime.UtcNow;
+                presence.Presence_ScanInfo = code;
+                _context.Presences.Update(presence);
+                await _context.SaveChangesAsync();
             }
-
-            return false;
         }
 
-        private string GenerateRandomCode(int length)
+        private string GenerateCode()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
+            return new string(Enumerable.Repeat(chars, 15)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public static void WriteToFile(string fileName, string content)
+        {
+            // Définir le chemin du fichier
+            string filePath = Path.Combine(@"C:\tmp", fileName);
+
+            try
+            {
+                // Vérifier si le répertoire existe, sinon le créer
+                if (!Directory.Exists(@"C:\tmp"))
+                {
+                    Directory.CreateDirectory(@"C:\tmp");
+                }
+
+                // Écrire le contenu dans le fichier
+                File.Write(filePath, content);
+                Console.WriteLine("Le fichier a été écrit avec succès !");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Une erreur s'est produite : " + ex.Message);
+            }
         }
     }
+
+
 }
