@@ -235,6 +235,26 @@ namespace API_GesSIgn.Controllers
             return Ok(result);
         }
         
+        // GET: api/SubjectsHour/Teacher/byDateRange
+        [HttpGet("Teacher/byDateRange")]
+        [RoleRequirement("Professeur")]
+        public async Task<ActionResult<IEnumerable<SubjectsHourSimplify>>> GetSubjectsHourByTeacherAndDateRange([FromQuery] DateRangeRequest dateRange)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            var subjectsHours = await _context.SubjectsHour
+                .Include(sh => sh.SubjectsHour_Bulding)
+                .Include(sh => sh.SubjectsHour_Subjects)
+                .Where(sh => sh.SubjectsHour_Subjects.Subjects_User_Id == userId &&
+                            sh.SubjectsHour_DateStart >= dateRange.StartDate && 
+                            sh.SubjectsHour_DateEnd <= dateRange.EndDate)
+                .ToListAsync();
+
+            var result = subjectsHours.Select(sh => SubjectsHourSimplify.FromSubjectsHour(sh)).ToList();
+
+            return Ok(result);
+        }
+
         private bool SubjectsHourExists(int id)
         {
             return _context.SubjectsHour.Any(e => e.SubjectsHour_Id == id);
