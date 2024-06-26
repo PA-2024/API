@@ -11,6 +11,9 @@ namespace Services
     public class PresenceHub : Hub
     {
         private readonly MonDbContext _context;
+        private static readonly Random random = new Random();
+        private static Dictionary<string, Timer> teacherTimers = new Dictionary<string, Timer>();
+
 
         public PresenceHub(MonDbContext context)
         {
@@ -19,17 +22,21 @@ namespace Services
 
         public async Task JoinRoom(int subjectHourId)
         {
-            try
+            var connectionId = Context.ConnectionId;
+            await Groups.AddToGroupAsync(connectionId, subjectHourId.ToString());
+
+            await SendCode(subjectHourId);
+
+            if (teacherTimers.ContainsKey(connectionId))
             {
-                PresenceHub.WriteToFile("log.txt", $"JoinRoom called with subjectHourId: {subjectHourId}");
-                await Groups.AddToGroupAsync(Context.ConnectionId, subjectHourId.ToString());
+                teacherTimers[connectionId].Change(0, 15000);
             }
-            catch (Exception ex)
+            else
             {
-                PresenceHub.WriteToFile("log.txt", $"Error in JoinRoom: {ex.Message}");
+                var timer = new Timer(async _ => await SendCode(subjectHourId), null, 0, 15000);
+                teacherTimers[connectionId] = timer;
             }
-            PresenceHub.WriteToFile("log.txt", $"Successfully joined room: {subjectHourId}");
-        }
+         }
 
         public async Task SendCode(int subjectHourId)
         {
@@ -51,6 +58,18 @@ namespace Services
                 _context.Presences.Update(presence);
                 await _context.SaveChangesAsync();
             }
+        }
+
+         public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var connectionId = Context.ConnectionId;
+            if (teacherTimers.ContainsKey(connectionId))
+            {
+                teacherTimers[connectionId].Dispose();
+                teacherTimers.Remove(connectionId);
+            }
+
+            await base.OnDisconnectedAsync(exception);
         }
 
         private string GenerateCode()
