@@ -76,7 +76,7 @@ namespace Services
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, 15)
+            return new string(Enumerable.Repeat(chars, 30)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
