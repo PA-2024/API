@@ -14,7 +14,6 @@ namespace Services
         private static readonly Random random = new Random();
         private static Dictionary<string, Timer> teacherTimers = new Dictionary<string, Timer>();
 
-        //
         public PresenceHub(MonDbContext context)
         {
             _context = context;
