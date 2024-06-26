@@ -75,7 +75,7 @@ namespace Services
                 }
 
                 // Écrire le contenu dans le fichier
-                File.WriteAllLines(filePath, content);
+                //File.WriteAllLines(filePath, content);
                 Console.WriteLine("Le fichier a été écrit avec succès !");
             }
             catch (Exception ex)
