@@ -47,7 +47,7 @@ namespace Controllers
                 User_num = sh.User_num,
             });
             
-            return Ok(users);
+            return Ok(result);
 
         }
 
