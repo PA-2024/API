@@ -51,11 +51,44 @@ namespace Controllers
 
         }
 
-        /*[HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetTeachers()
+        [HttpPost("registerTeacher")]
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<IActionResult> RegisterTeacher([FromBody] RegisterTeacherRequest request)
         {
-            return await _context.Users.ToListAsync();
+            if (_context.Users.Any(u => u.User_email == request.User_email))
+            {
+                return BadRequest("Cet email est déjà utilisé.");
+            }
+
+            var role = _context.Roles.FirstOrDefault(r => r.Role_Name == "Professeur");
+            if (role == null)
+            {
+                return NotFound("Le rôle 'teacher' n'existe pas.");
+            }
+
+            var user = new User
+            {
+                User_email = request.User_email,
+                User_password = request.User_password,
+                User_Role = role,
+                User_lastname = request.User_lastname,
+                User_firstname = request.User_firstname,
+                User_num = request.User_num,
+                User_School_Id = request.User_School_Id
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Enregistrement réussi.");
         }
-        $*/
     }
+
+    /*[HttpGet]
+    public async Task<ActionResult<IEnumerable<User>>> GetTeachers()
+    {
+        return await _context.Users.ToListAsync();
+    }
+    $*/
+}
 }
