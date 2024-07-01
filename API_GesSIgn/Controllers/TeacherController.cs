@@ -1,7 +1,9 @@
+using System.Data;
 using System.Security.Claims;
 using API_GesSIgn.Models;
 using API_GesSIgn.Models.Request;
 using API_GesSIgn.Models.Response;
+using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -82,7 +84,40 @@ namespace Controllers
 
             return Ok("Enregistrement réussi.");
         }
+
+        /// <summary>
+        /// Supréssion d'un professeur
+        /// </summary>
+        /// <param name="Teacher_id"></param>
+        /// <returns></returns>
+        [HttpDelete("DeleteTeacher/{Teacher_id}")]
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<IActionResult> DeleteTeacher(int Teacher_id)
+        {
+
+            var user = _context.Users.FirstOrDefault(u => u.User_Id == Teacher_id);
+            if (user == null)
+            {
+                return NotFound("Le Professeur n'existe pas.");
+            }
+
+            var subject = _context.Subjects.FirstOrDefault(s => s.Subjects_User_Id == Teacher_id);
+            if (user == null)
+            {
+                return NotFound("Le Professeur possède un ou plusieurs cours.");
+            }
+
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Supréssion réussi.");
+        }
+
+
     }
+
+
 
     /*[HttpGet]
     public async Task<ActionResult<IEnumerable<User>>> GetTeachers()
