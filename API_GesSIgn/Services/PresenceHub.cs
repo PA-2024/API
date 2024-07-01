@@ -2,21 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using API_GesSIgn.Models;
-
+using API_GesSIgn.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Services
 {
     public class PresenceHub : Hub
     {
-        private readonly MonDbContext _context;
+        private readonly IServiceProvider _serviceProvider;
         private static readonly Random random = new Random();
         private static Dictionary<string, Timer> teacherTimers = new Dictionary<string, Timer>();
 
-        public PresenceHub(MonDbContext context)
+        public PresenceHub(IServiceProvider serviceProvider)
         {
-            _context = context;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task JoinRoom(int subjectHourId)
@@ -35,7 +37,7 @@ namespace Services
                 var timer = new Timer(async _ => await SendCode(subjectHourId), null, 0, 15000);
                 teacherTimers[connectionId] = timer;
             }
-         }
+        }
 
         public async Task SendCode(int subjectHourId)
         {
@@ -46,20 +48,11 @@ namespace Services
 
         public async Task ValidatePresence(int subjectHourId, string code, int studentId)
         {
-            var presence = _context.Presences
-                .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
-
-            if (presence != null)
-            {
-                presence.Presence_Is = true;
-                presence.Presence_ScanDate = DateTime.UtcNow;
-                presence.Presence_ScanInfo = code;
-                _context.Presences.Update(presence);
-                await _context.SaveChangesAsync();
-            }
+            ///var presenceService = _serviceProvider.GetRequiredService<PresenceService>();
+            ///await presenceService.MarkPresenceAsync(subjectHourId, code, studentId);
         }
 
-         public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             var connectionId = Context.ConnectionId;
             if (teacherTimers.ContainsKey(connectionId))
@@ -74,8 +67,7 @@ namespace Services
         private string GenerateCode()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, 30)
+            return new string(Enumerable.Repeat(chars, 15)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
@@ -93,7 +85,7 @@ namespace Services
                 }
 
                 // Écrire le contenu dans le fichier
-                //File.WriteAllLines(filePath, content);
+                File.AppendAllText(filePath, content + Environment.NewLine);
                 Console.WriteLine("Le fichier a été écrit avec succès !");
             }
             catch (Exception ex)
@@ -102,6 +94,4 @@ namespace Services
             }
         }
     }
-
-
 }
