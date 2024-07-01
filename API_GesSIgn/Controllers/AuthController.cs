@@ -8,6 +8,25 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
+/* 
+    Créé le : 21 May 2024
+    Créé par : NicolasDebras
+    Modifications :
+        35090bd - update token  date Expires - NicolasDebras
+    6377337 - fix bug UpdateUser (pour que @capdrake arrete de me faire chier ) - debrasnicolas
+    9a7c845 - fix error - NicolasDebras
+    73d2e25 - ajout UpdateUser pour le petit tdc de bastien - NicolasDebras
+    94fa232 - update auth - NicolasDebras
+    565490f - fix Login - NicolasDebras
+    28f6c00 - add list - NicolasDebras
+    e9d8433 - update register - debrasnicolas
+    2145786 - update login - debrasnicolas
+    b9dc9b6 - update controller auth - debrasnicolas
+    e274b79 - add controller & ajout d' une ecole dans les utilisateurs - NicolasDebras
+    a44dd9e - add auth work - NicolasDebras
+*/
+
+
 namespace API_GesSIgn.Controllers
 {
     [ApiController]

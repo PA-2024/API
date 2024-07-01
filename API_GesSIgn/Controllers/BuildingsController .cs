@@ -3,6 +3,17 @@ using API_GesSIgn.Models.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+/* 
+    Créé le : 14 May 2024
+    Créé par : NicolasDebras
+    Modifications :
+        0455995 - fix UpdateBuilding - debrasnicolas
+    8c4e904 - fix CreateBuilding - NicolasDebras
+    3b2eb80 - add GetBuildingbySchool - NicolasDebras
+    df56d6e - update foreignkey - NicolasDebras
+    4471112 - add building controllers - NicolasDebras
+*/
+
 namespace API_GesSIgn.Controllers
 {
     [ApiController]

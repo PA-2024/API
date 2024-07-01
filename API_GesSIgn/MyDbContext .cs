@@ -2,6 +2,24 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 
+
+/* 
+    Créé le : 24 April 2024
+    Créé par : NicolasDebras
+    Modifications :
+        8af292a - add school in subject - NicolasDebras
+    d3ac484 - fix SubjectHours - NicolasDebras
+    c2a6b42 - add but Request PostSubjectsHour - NicolasDebras
+    30169da - update model Presence & Subjects - debrasnicolas
+    df56d6e - update foreignkey - NicolasDebras
+    54d52e1 - change diff - NicolasDebras
+    e692f48 - complete push - NicolasDebras
+    8e62303 - updat model with correct ef core - NicolasDebras
+    a0fe1f7 - fix - debrasnicolas
+    272427f - move file - NicolasDebras
+*/
+
+
 public class MonDbContext : DbContext
 {
     // a delete lors de l'ajout d'une table 

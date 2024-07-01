@@ -11,6 +11,31 @@ using Services;
 using System.Text;
 using System.Text.Json;
 
+/* 
+    Créé le : 24 April 2024
+    Créé par : NicolasDebras
+    Modifications :
+        9f1adc7 - refactor response - NicolasDebras
+    4182590 - app - NicolasDebras
+    a9c6ab0 - AllowAllLocal - NicolasDebras
+    1f8a838 - test - NicolasDebras
+    fd354e3 - }); - NicolasDebras
+    944b44e - accept all CORS - NicolasDebras
+    46d3493 - test - NicolasDebras
+    3d6d688 - allow new localhost - NicolasDebras
+    94fa232 - update auth - NicolasDebras
+    28f6c00 - add list - NicolasDebras
+    a44dd9e - add auth work - NicolasDebras
+    4471112 - add building controllers - NicolasDebras
+    54d52e1 - change diff - NicolasDebras
+    2e1ccd6 - push - NicolasDebras
+    e692f48 - complete push - NicolasDebras
+    ab3e302 - work on model - debrasnicolas
+    f99f21e - change - debrasnicolas
+    272427f - move file - NicolasDebras
+*/
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Ajoutez services au conteneur.
