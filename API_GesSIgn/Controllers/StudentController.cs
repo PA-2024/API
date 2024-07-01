@@ -65,25 +65,47 @@ namespace API_GesSIgn.Controllers
             return student;
         }
 
-        // POST: api/Student
-        [HttpPost]
-        public async Task<ActionResult<Student>> PostStudent(StudentRequest student)
+        [RoleRequirement("Gestion Ecole")]
+        [HttpPost("registerStudent")]
+        public async Task<IActionResult> RegisterStudent([FromBody] RegisterStudentRequest request)
         {
-            if (student == null && UserController.UserExists(student.Student_User_id, _context) && SectorsController.SectorExist(student.Student_Class_id, _context) )
+            if (_context.Users.Any(u => u.User_email == request.User_email))
             {
-                return BadRequest("Student is null or Student/id wrong ");
+                return BadRequest("Cet email est déjà utilisé.");
             }
-            var result = new Student
+
+            var role = _context.Roles.FirstOrDefault(r => r.Role_Name == "Eleve");
+            if (role == null)
             {
-                Student_User_Id = student.Student_User_id,
-                Student_Sector_Id = student.Student_Class_id
+                return NotFound("Le rôle 'student' n'existe pas.");
+            }
+
+            var user = new User
+            {
+                User_email = request.User_email,
+                User_password = request.User_password,
+                User_Role = role,
+                User_lastname = request.User_lastname,
+                User_firstname = request.User_firstname,
+                User_num = request.User_num,
+                User_School_Id = request.User_School_Id
             };
 
-            _context.Students.Add(result);
-            var save = await _context.SaveChangesAsync();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStudent", new { id = result.Student_Id }, student);
+            var student = new Student
+            {
+                Student_User_Id = user.User_Id,
+                Student_Sector_Id = request.Student_Sector_Id
+            };
+
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+
+            return Ok("Enregistrement réussi.");
         }
+    
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStudent(int id, [FromBody] UpdateStudentSectorRequest request)
