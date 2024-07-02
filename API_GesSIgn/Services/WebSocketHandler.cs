@@ -1,26 +1,18 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using API_GesSIgn.Models;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using API_GesSIgn.Models;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using API_GesSIgn.Services;
 
 namespace Services
 {
     public class WebSocketHandler
     {
-        private readonly ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
+        private readonly ConcurrentDictionary<string, Room> _rooms = new ConcurrentDictionary<string, Room>();
         private readonly IServiceProvider _serviceProvider;
 
         public WebSocketHandler(IServiceProvider serviceProvider)
@@ -34,26 +26,23 @@ namespace Services
             {
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
                 string socketId = Guid.NewGuid().ToString();
-                _sockets[socketId] = webSocket;
-
-                await SendInitialCode(webSocket);
-                var timer = new Timer(async _ => await SendCode(webSocket), null, 0, 15000);
 
                 await Receive(webSocket, async (result, buffer) =>
                 {
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
                         var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                        await HandleMessage(socketId, message);
+                        await HandleMessage(socketId, message, webSocket);
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        _sockets.TryRemove(socketId, out _);
+                        foreach (var room in _rooms.Values)
+                        {
+                            room.Sockets.TryRemove(socketId, out _);
+                        }
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by the WebSocketHandler", CancellationToken.None);
                     }
                 });
-
-                timer.Dispose();
             }
             else
             {
@@ -61,22 +50,17 @@ namespace Services
             }
         }
 
-        private async Task SendInitialCode(WebSocket webSocket)
-        {
-            string code = GenerateCode();
-            await SendMessage(webSocket, code);
-        }
-
-        private async Task SendCode(WebSocket webSocket)
-        {
-            string code = GenerateCode();
-            await SendMessage(webSocket, code);
-        }
-
         private async Task SendMessage(WebSocket webSocket, string message)
         {
-            var buffer = Encoding.UTF8.GetBytes(message);
-            await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+            try
+            {
+                var buffer = Encoding.UTF8.GetBytes(message);
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         private async Task Receive(WebSocket webSocket, Action<WebSocketReceiveResult, byte[]> handleMessage)
@@ -89,10 +73,36 @@ namespace Services
             }
         }
 
-        private async Task HandleMessage(string socketId, string message)
+        private async Task HandleMessage(string socketId, string message, WebSocket webSocket)
         {
             var parts = message.Split(' ');
-            if (parts.Length == 3 && parts[0] == "validate")
+            if (parts.Length >= 2 && parts[0] == "createRoom")
+            {
+                var token = parts[1];
+                var subjectHourId = parts.Length > 2 ? parts[2] : null;
+
+                if (!string.IsNullOrEmpty(subjectHourId) && ValidateToken(token))
+                {
+                    var createRoomResult = CreateRoom(subjectHourId, socketId);
+                    if (createRoomResult is BadRequestObjectResult)
+                    {
+                        await SendMessage(webSocket, "Room already exists.");
+                    }
+                    else
+                    {
+                        _rooms[subjectHourId].Sockets[socketId] = webSocket;
+                        await SendMessage(webSocket, "Room created.");
+
+                        // Start sending codes to the creator
+                        var timer = new Timer(async _ => await SendCodeToCreator(subjectHourId), null, 0, 15000);
+                    }
+                }
+                else
+                {
+                    await SendMessage(webSocket, "Invalid token or subjectHourId.");
+                }
+            }
+            else if (parts.Length == 3 && parts[0] == "validate")
             {
                 int subjectHourId = int.Parse(parts[1]);
                 int studentId = int.Parse(parts[2]);
@@ -116,11 +126,59 @@ namespace Services
             }
         }
 
+        private async Task SendCodeToCreator(string roomId)
+        {
+            if (_rooms.TryGetValue(roomId, out var room))
+            {
+                if (room.Sockets.TryGetValue(room.CreatorSocketId, out var creatorSocket))
+                {
+                    var code = GenerateCode();
+                    await SendMessage(creatorSocket, code);
+                }
+            }
+        }
+
+        private bool ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
+
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public IActionResult CreateRoom(string subjectHourId, string creatorSocketId)
+        {
+            if (_rooms.ContainsKey(subjectHourId))
+            {
+                return new BadRequestObjectResult("Room already exists.");
+            }
+
+            var room = new Room { Id = subjectHourId, CreatorSocketId = creatorSocketId };
+            _rooms[subjectHourId] = room;
+            return new OkObjectResult("Room created.");
+        }
+
         private string GenerateCode()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, 15)
+            return new string(Enumerable.Repeat(chars, 30)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }

@@ -39,8 +39,6 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Ajoutez services au conteneur.
-builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -148,6 +146,9 @@ builder.Services.AddDbContext<MonDbContext>(options =>
     options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
 
 
+builder.Services.AddSingleton<WebSocketHandler>();
+
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -192,4 +193,5 @@ app.Use(async (context, next) =>
 
 
 app.MapControllers();
-app.Run();
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run("http://*:" + port);
