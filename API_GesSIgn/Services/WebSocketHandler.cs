@@ -84,18 +84,12 @@ namespace Services
                 if (!string.IsNullOrEmpty(subjectHourId) && ValidateToken(token))
                 {
                     var createRoomResult = CreateRoom(subjectHourId, socketId);
-                    if (createRoomResult is BadRequestObjectResult)
-                    {
-                        await SendMessage(webSocket, "Room already exists.");
-                    }
-                    else
-                    {
-                        _rooms[subjectHourId].Sockets[socketId] = webSocket;
-                        await SendMessage(webSocket, "Room created.");
+                    _rooms[subjectHourId].Sockets[socketId] = webSocket;
+                    await SendMessage(webSocket, "Room created.");
 
-                        // Start sending codes to the creator
-                        var timer = new Timer(async _ => await SendCodeToCreator(subjectHourId), null, 0, 15000);
-                    }
+                    // Start sending codes to the creator
+                    var timer = new Timer(async _ => await SendCodeToCreator(subjectHourId), null, 0, 15000);
+                    
                 }
                 else
                 {
@@ -138,6 +132,11 @@ namespace Services
             }
         }
 
+        /// <summary>
+        /// Permet de valider un token JWT et regarde si le role est prof
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         private bool ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -145,7 +144,7 @@ namespace Services
 
             try
             {
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                var tokenValidate =  tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
@@ -154,7 +153,13 @@ namespace Services
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
-                return true;
+                var roleClaim = tokenValidate.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+                if (roleClaim != null && roleClaim.Value == "Professeur")
+                {
+                    return true;
+                }
+                return false; // le token est correct mais le rôle n'est pas Professeur
+
             }
             catch
             {
@@ -166,12 +171,17 @@ namespace Services
         {
             if (_rooms.ContainsKey(subjectHourId))
             {
-                return new BadRequestObjectResult("Room already exists.");
+                // si room deja presente, update CreatorSocketId
+                _rooms[subjectHourId].CreatorSocketId = creatorSocketId;
+                return new OkObjectResult("Room already exists, CreatorSocketId updated.");
             }
-
-            var room = new Room { Id = subjectHourId, CreatorSocketId = creatorSocketId };
-            _rooms[subjectHourId] = room;
-            return new OkObjectResult("Room created.");
+            else
+            {
+                // Sinon, création room
+                var room = new Room { Id = subjectHourId, CreatorSocketId = creatorSocketId };
+                _rooms[subjectHourId] = room;
+                return new OkObjectResult("Room created.");
+            }
         }
 
         private string GenerateCode()
