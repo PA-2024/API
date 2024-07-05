@@ -33,6 +33,10 @@ public class MonDbContext : DbContext
     public DbSet<Building> Buildings { get; set; }
     public DbSet<Presence> Presences { get; set; }
     public DbSet<QCM> QCMs { get; set; }
+
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<OptionQcm> OptionQcm { get; set; }
+    public DbSet<QcmResult> QcmResult { get; set; }
     public DbSet<Student> Students { get; set; }
     public DbSet<Subjects> Subjects { get; set; }
     public DbSet<SubjectsHour> SubjectsHour { get; set; }

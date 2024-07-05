@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
-namespace API_GesSIgn.Services
+namespace API_GesSIgn.Models
 {
     public class Room
     {

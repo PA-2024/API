@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using API_GesSIgn.Services;
+using API_GesSIgn.Models;
 
-namespace Services
+namespace API_GesSIgn.Sockets
 {
     public class WebSocketHandler
     {
@@ -89,7 +89,7 @@ namespace Services
 
                     // Start sending codes to the creator
                     var timer = new Timer(async _ => await SendCodeToCreator(subjectHourId), null, 0, 15000);
-                    
+
                 }
                 else
                 {
@@ -144,7 +144,7 @@ namespace Services
 
             try
             {
-                var tokenValidate =  tokenHandler.ValidateToken(token, new TokenValidationParameters
+                var tokenValidate = tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
