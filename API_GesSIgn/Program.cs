@@ -1,29 +1,6 @@
-/* 
-    Créé le : 24 April 2024
-    Créé par : NicolasDebras
-    Modifications :
-        9f1adc7 - refactor response - NicolasDebras
-    4182590 - app - NicolasDebras
-    a9c6ab0 - AllowAllLocal - NicolasDebras
-    1f8a838 - test - NicolasDebras
-    fd354e3 - }); - NicolasDebras
-    944b44e - accept all CORS - NicolasDebras
-    46d3493 - test - NicolasDebras
-    3d6d688 - allow new localhost - NicolasDebras
-    94fa232 - update auth - NicolasDebras
-    28f6c00 - add list - NicolasDebras
-    a44dd9e - add auth work - NicolasDebras
-    4471112 - add building controllers - NicolasDebras
-    54d52e1 - change diff - NicolasDebras
-    2e1ccd6 - push - NicolasDebras
-    e692f48 - complete push - NicolasDebras
-    ab3e302 - work on model - debrasnicolas
-    f99f21e - change - debrasnicolas
-    272427f - move file - NicolasDebras
-*/
-
 using API_GesSIgn.Helpers;
 using API_GesSIgn.Models;
+using API_GesSIgn.Services;
 using API_GesSIgn.Sockets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -34,9 +11,6 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json;
 
-
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -45,7 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(swagger =>
 {
-    //This is to generate the Default UI of Swagger Documentation
+    // This is to generate the Default UI of Swagger Documentation
     swagger.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -93,9 +67,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-
 var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
-
 
 builder.Services.AddAuthentication(options =>
 {
@@ -146,9 +118,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<MonDbContext>(options =>
     options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
 
-
 builder.Services.AddSingleton<WebSocketHandler>();
-
+builder.Services.AddScoped<IQcmService, QcmService>();
 
 var app = builder.Build();
 
@@ -192,7 +163,8 @@ app.Use(async (context, next) =>
     }
 });
 
-
 app.MapControllers();
+app.MapHub<QcmHub>("/qcmHub");
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run("http://*:" + port);

@@ -123,5 +123,32 @@ public class MonDbContext : DbContext
             .HasOne(s => s.Subjects_School)
             .WithMany()
             .HasForeignKey(s => s.Subjects_School_Id);
+
+        modelBuilder.Entity<QCM>()
+            .HasOne(q => q.QCM_SubjectHour)
+            .WithMany()
+            .HasForeignKey(q => q.QCM_SubjectHour_id);
+
+        modelBuilder.Entity<Question>()
+            .HasOne(q => q.Question_QCM)
+            .WithMany()
+            .HasForeignKey(q => q.Question_QCM_Id);
+
+        modelBuilder.Entity<OptionQcm>()
+            .HasOne(o => o.OptionQcm_Question)
+            .WithMany()
+            .HasForeignKey(o => o.OptionQcm_Question_Id);
+
+        modelBuilder.Entity<QcmResult>()
+            .HasOne(qr => qr.QcmResult_QCM)
+            .WithMany()
+            .HasForeignKey(qr => qr.QcmResult_QCM_Id);
+
+        modelBuilder.Entity<QcmResult>()
+            .HasOne(qr => qr.QcmResult_Student)
+            .WithMany()
+            .HasForeignKey(qr => qr.QcmResult_Student_Id);
+
+
     }
 }
