@@ -76,6 +76,31 @@ namespace API_GesSIgn.Migrations
                     b.ToTable("Errors");
                 });
 
+            modelBuilder.Entity("API_GesSIgn.Models.OptionQcm", b =>
+                {
+                    b.Property<int>("OptionQcm_id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OptionQcm_id"));
+
+                    b.Property<bool>("OptionQcm_IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OptionQcm_Question_Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OptionQcm_Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("OptionQcm_id");
+
+                    b.HasIndex("OptionQcm_Question_Id");
+
+                    b.ToTable("OptionQcm");
+                });
+
             modelBuilder.Entity("API_GesSIgn.Models.Presence", b =>
                 {
                     b.Property<int>("Presence_Id")
@@ -86,6 +111,12 @@ namespace API_GesSIgn.Migrations
 
                     b.Property<bool>("Presence_Is")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("Presence_ScanDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Presence_ScanInfo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Presence_Student_Id")
                         .HasColumnType("int");
@@ -113,14 +144,62 @@ namespace API_GesSIgn.Migrations
                     b.Property<bool>("QCM_Done")
                         .HasColumnType("bit");
 
-                    b.Property<int>("QCM_TeacherUser_Id")
+                    b.Property<int>("QCM_SubjectHour_id")
                         .HasColumnType("int");
 
                     b.HasKey("QCM_Id");
 
-                    b.HasIndex("QCM_TeacherUser_Id");
+                    b.HasIndex("QCM_SubjectHour_id");
 
                     b.ToTable("QCMs");
+                });
+
+            modelBuilder.Entity("API_GesSIgn.Models.QcmResult", b =>
+                {
+                    b.Property<int>("QcmResult_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QcmResult_Id"));
+
+                    b.Property<int>("QcmResult_QCM_Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QcmResult_Score")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QcmResult_Student_Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("QcmResult_Id");
+
+                    b.HasIndex("QcmResult_QCM_Id");
+
+                    b.HasIndex("QcmResult_Student_Id");
+
+                    b.ToTable("QcmResult");
+                });
+
+            modelBuilder.Entity("API_GesSIgn.Models.Question", b =>
+                {
+                    b.Property<int>("Question_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Question_Id"));
+
+                    b.Property<int>("Question_QCM_Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Question_Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Question_Id");
+
+                    b.HasIndex("Question_QCM_Id");
+
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Roles", b =>
@@ -280,6 +359,9 @@ namespace API_GesSIgn.Migrations
                     b.Property<int>("SubjectsHour_Subjects_Id")
                         .HasColumnType("int");
 
+                    b.Property<string>("SubjectsHour_TeacherComment")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("SubjectsHour_Id");
 
                     b.HasIndex("SubjectsHour_Bulding_Id");
@@ -344,6 +426,17 @@ namespace API_GesSIgn.Migrations
                     b.Navigation("Bulding_School");
                 });
 
+            modelBuilder.Entity("API_GesSIgn.Models.OptionQcm", b =>
+                {
+                    b.HasOne("API_GesSIgn.Models.Question", "OptionQcm_Question")
+                        .WithMany()
+                        .HasForeignKey("OptionQcm_Question_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OptionQcm_Question");
+                });
+
             modelBuilder.Entity("API_GesSIgn.Models.Presence", b =>
                 {
                     b.HasOne("API_GesSIgn.Models.Student", "Presence_Student")
@@ -365,13 +458,43 @@ namespace API_GesSIgn.Migrations
 
             modelBuilder.Entity("API_GesSIgn.Models.QCM", b =>
                 {
-                    b.HasOne("API_GesSIgn.Models.User", "QCM_Teacher")
+                    b.HasOne("API_GesSIgn.Models.SubjectsHour", "QCM_SubjectHour")
                         .WithMany()
-                        .HasForeignKey("QCM_TeacherUser_Id")
+                        .HasForeignKey("QCM_SubjectHour_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("QCM_Teacher");
+                    b.Navigation("QCM_SubjectHour");
+                });
+
+            modelBuilder.Entity("API_GesSIgn.Models.QcmResult", b =>
+                {
+                    b.HasOne("API_GesSIgn.Models.QCM", "QcmResult_QCM")
+                        .WithMany()
+                        .HasForeignKey("QcmResult_QCM_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API_GesSIgn.Models.Student", "QcmResult_Student")
+                        .WithMany()
+                        .HasForeignKey("QcmResult_Student_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QcmResult_QCM");
+
+                    b.Navigation("QcmResult_Student");
+                });
+
+            modelBuilder.Entity("API_GesSIgn.Models.Question", b =>
+                {
+                    b.HasOne("API_GesSIgn.Models.QCM", "Question_QCM")
+                        .WithMany()
+                        .HasForeignKey("Question_QCM_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question_QCM");
                 });
 
             modelBuilder.Entity("API_GesSIgn.Models.Sectors", b =>
