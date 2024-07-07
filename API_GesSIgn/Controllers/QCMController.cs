@@ -125,10 +125,7 @@ namespace API_GesSIgn.Controllers
 
             foreach (var qcm in tmp)
             {
-                QCMDto add = new QCMDto();               
-                add.Id = qcm.QCM_Id;
-                add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
-
+                QCMDto add = QcmToQcmDto(qcm).Result;
                 qCMDtos.Add(add);
             }
 
