@@ -54,18 +54,7 @@ namespace API_GesSIgn.Controllers
 
             foreach (var qcm in qcmList)
             {
-                QCMDto add = new QCMDto();
-                var questions = await _context.Questions.Where(q => q.Question_QCM_Id == qcm.QCM_Id).ToListAsync();
-                List<QuestionDto> questionDtos = new List<QuestionDto>();
-                foreach (var question in questions)
-                {
-                    var options = await _context.OptionQcm.Where(o => o.OptionQcm_Question_Id == question.Question_Id).ToListAsync();
-                    questionDtos.Add(QuestionDto.FromQuestion(question, options));
-                }
-                add.Questions = questionDtos;
-                add.Id = qcm.QCM_Id;
-                add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
-
+                QCMDto add = QcmToQcmDto(qcm).Result;
                 qcmDtos.Add(add);
             }
 
@@ -87,7 +76,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("qcmByRange")]
-        public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmBYrange([FromQuery] DateRangeRequest dateRange)
+        public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmByrange([FromQuery] DateRangeRequest dateRange)
         {
             var tmp = await _context.QCMs
                 .Include(q => q.QCM_SubjectHour)
@@ -119,15 +108,19 @@ namespace API_GesSIgn.Controllers
                 var option = await _context.OptionQcm.Where(o => o.OptionQcm_Question_Id == q.Question_Id).ToListAsync();
                 questionDtos.Add(QuestionDto.FromQuestion(q, option));
             }
+            add.Questions = questionDtos;
             add.Id = qcm.QCM_Id;
-            add.Title = qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+            add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
             return add;
         }
 
         [HttpPost("DuplicateQcmByIdQcm/{id}/{SubjectsHour_id}")]
         public async Task<ActionResult<QCMDto>> DuplicateQcmById(int id, int SubjectsHour_id)
         {
-            var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
+            var qcm = await _context.QCMs
+                .Include(q => q.QCM_SubjectHour)
+                .ThenInclude(q => q.SubjectsHour_Subjects)
+                .FirstOrDefaultAsync(q => q.QCM_Id == id);
             var subjectHour = await _context.SubjectsHour.FirstOrDefaultAsync(s => s.SubjectsHour_Id == SubjectsHour_id);
             if (qcm == null && subjectHour == null)
             {
@@ -139,6 +132,8 @@ namespace API_GesSIgn.Controllers
             add.QCM_SubjectHour_id = SubjectsHour_id;
             
             var newQcm = _context.QCMs.Add(add);
+            await _context.SaveChangesAsync();
+            
 
             foreach (var question in old.Questions)
             {
@@ -146,12 +141,14 @@ namespace API_GesSIgn.Controllers
                 qes.Question_QCM_Id = newQcm.Entity.QCM_Id;
                 qes.Question_Text = question.Text;
                 var newQuestion = _context.Questions.Add(qes);
+                await _context.SaveChangesAsync();
                 foreach (var option in question.Options)
                 {
                     OptionQcm opt = new OptionQcm();
                     opt.OptionQcm_Question_Id = newQuestion.Entity.Question_Id;
                     opt.OptionQcm_Text = option.Text;
                     _context.OptionQcm.Add(opt);
+                    await _context.SaveChangesAsync();
                 }
             }
             await _context.SaveChangesAsync();
