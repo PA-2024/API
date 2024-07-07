@@ -184,6 +184,9 @@ namespace API_GesSIgn.Services
                 {
                     var errorMessage = new { action = "ERROR", message = "QCM not found." };
                     await SendMessage(qcm.Professor.WebSocket, errorMessage);
+                } else
+                {
+                    qcm.IsRunning = false;
                 }
 
                 return;
