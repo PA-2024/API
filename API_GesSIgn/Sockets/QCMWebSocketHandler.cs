@@ -2,10 +2,18 @@
 using API_GesSIgn.Models.Response;
 using API_GesSIgn.Services;
 using API_GesSIgn.Sockets;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
-
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace API_GesSIgn.Services
 {
@@ -56,6 +64,7 @@ namespace API_GesSIgn.Services
                 else
                 {
                     var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    Console.WriteLine($"Received message: {message}");  // Log received message
                     await HandleMessage(webSocket, qcm, message);
                 }
             }
@@ -67,49 +76,54 @@ namespace API_GesSIgn.Services
             {
                 var qcmService = scope.ServiceProvider.GetRequiredService<IQcmService>();
 
-                // Handle incoming messages from clients (students/professor)
-                if (message.StartsWith("JOIN_STUDENT:"))
+                dynamic parsedMessage = JsonConvert.DeserializeObject(message);
+                string action = parsedMessage.action;
+
+                if (action == "JOIN_STUDENT")
                 {
-                    var parts = message.Substring(13).Split('|');
-                    var studentId = parts[0];
+                    string studentId = parsedMessage.studentId;
+                    string studentName = parsedMessage.studentName;
                     var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
 
                     if (findStudent != null)
                     {
                         findStudent.webSocket = webSocket;
                         Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Id}");
-                        return;
                     }
-                    var studentName = parts[1];
-                    var student = new StudentQcm(studentId, studentName);
-                    student.webSocket = webSocket; // Assign the WebSocket to the student
-                    qcm.Students.Add(student);
-                    Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
+                    else
+                    {
+                        var student = new StudentQcm(studentId, studentName);
+                        student.webSocket = webSocket; // Assign the WebSocket to the student
+                        qcm.Students.Add(student);
+                        Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
+                    }
+
+                    // Notify the professor
+                    await NotifyProfessor(qcm);
                 }
-                else if (message.StartsWith("JOIN_PROFESSOR:"))
+                else if (action == "JOIN_PROFESSOR")
                 {
-                    var parts = message.Substring(15).Split('|');
-                    if (WebSocketHandler.ValidateToken(parts[0]))
+                    string token = parsedMessage.token;
+                    string professorName = parsedMessage.professorName;
+
+                    if (WebSocketHandler.ValidateToken(token))
                     {
                         if (qcm.Professor != null)
                         {
                             qcm.Professor.WebSocket = webSocket;
                             Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
-                            return;
                         }
                         else
                         {
-                            var professorName = parts[1];
                             qcm.Professor = new Professor(professorName, webSocket);
                             Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
                         }
                     }
                 }
-                else if (message.StartsWith("ANSWER:"))
+                else if (action == "ANSWER")
                 {
-                    var parts = message.Substring(7).Split('|');
-                    var studentId = parts[0];
-                    var answer = int.Parse(parts[1]);
+                    string studentId = parsedMessage.studentId;
+                    int answer = parsedMessage.answer;
 
                     var student = qcm.Students.Find(s => s.Student_Id == studentId);
                     if (student != null)
@@ -120,16 +134,16 @@ namespace API_GesSIgn.Services
                         {
                             student.Score += 10;
                         }
-                        var feedback = question.CorrectOption.Contains(answer) ? "Correct" : "Incorrect";
+                        var feedback = new { result = question.CorrectOption.Contains(answer) ? "Correct" : "Incorrect" };
                         await SendMessage(webSocket, feedback);
                     }
                 }
-                else if (message.StartsWith("START:"))
+                else if (action == "START")
                 {
-                    var qcmId = int.Parse(message.Substring(6));
+                    int qcmId = parsedMessage.qcmId;
                     await StartQCM(qcmId, qcmService, qcm);
                 }
-                else if (message == "PAUSE")
+                else if (action == "PAUSE")
                 {
                     qcm.IsRunning = false;
                 }
@@ -142,6 +156,14 @@ namespace API_GesSIgn.Services
             if (qcmDto == null)
             {
                 Console.WriteLine("QCM not found.");
+
+                // Notify the professor about the error
+                if (qcm.Professor != null && qcm.Professor.WebSocket.State == WebSocketState.Open)
+                {
+                    var errorMessage = new { action = "ERROR", message = "QCM not found." };
+                    await SendMessage(qcm.Professor.WebSocket, errorMessage);
+                }
+
                 return;
             }
 
@@ -151,6 +173,15 @@ namespace API_GesSIgn.Services
 
             qcm.IsRunning = true;
             qcm.CurrentQuestionIndex = 0;
+
+            // Notify the professor that the QCM is starting
+            if (qcm.Professor != null && qcm.Professor.WebSocket.State == WebSocketState.Open)
+            {
+                var startMessage = new { action = "INFO", message = "QCM is starting." };
+                await SendMessage(qcm.Professor.WebSocket, startMessage);
+                Console.WriteLine("Sent start message to professor.");  // Log message
+            }
+
             await RunQCM(qcm);
         }
 
@@ -159,10 +190,11 @@ namespace API_GesSIgn.Services
             while (qcm.CurrentQuestionIndex < qcm.Questions.Count && qcm.IsRunning)
             {
                 var question = qcm.Questions[qcm.CurrentQuestionIndex];
-                var questionMessage = $"{question.Id}|{question.Text}|{string.Join(",", question.Options)}";
+                var questionMessage = new { action = "QUESTION", id = question.Id, text = question.Text, options = question.Options };
 
                 // Broadcast the question to all students and professor
                 await BroadcastMessage(qcm, questionMessage);
+                Console.WriteLine("Sent question to all clients.");  // Log message
 
                 await Task.Delay(20000); // Wait 20 seconds for answers
 
@@ -179,18 +211,20 @@ namespace API_GesSIgn.Services
         private async Task SendRanking(CurrentQCM qcm)
         {
             qcm.Students.Sort((x, y) => y.Score.CompareTo(x.Score));
-            var rankingMessage = "Ranking:\n";
-            foreach (var student in qcm.Students)
+            var rankingMessage = new
             {
-                rankingMessage += $"{student.Name}: {student.Score} points\n";
-            }
+                action = "RANKING",
+                ranking = qcm.Students.Select(s => new { name = s.Name, score = s.Score }).ToList()
+            };
 
             await BroadcastMessage(qcm, rankingMessage);
+            Console.WriteLine("Sent ranking to all clients.");  // Log message
         }
 
-        private async Task BroadcastMessage(CurrentQCM qcm, string message)
+        private async Task BroadcastMessage(CurrentQCM qcm, object message)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(message);
+            var messageString = JsonConvert.SerializeObject(message);
+            var messageBytes = Encoding.UTF8.GetBytes(messageString);
             foreach (var student in qcm.Students)
             {
                 var studentWebSocket = student.webSocket;
@@ -204,13 +238,26 @@ namespace API_GesSIgn.Services
             if (professorWebSocket != null && professorWebSocket.State == WebSocketState.Open)
             {
                 await professorWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                Console.WriteLine("Sent message to professor.");  // Log message
             }
         }
 
-        private async Task SendMessage(WebSocket webSocket, string message)
+        private async Task SendMessage(WebSocket webSocket, object message)
         {
-            var messageBytes = Encoding.UTF8.GetBytes(message);
+            var messageString = JsonConvert.SerializeObject(message);
+            var messageBytes = Encoding.UTF8.GetBytes(messageString);
             await webSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        private async Task NotifyProfessor(CurrentQCM qcm)
+        {
+            if (qcm.Professor != null && qcm.Professor.WebSocket.State == WebSocketState.Open)
+            {
+                var students = qcm.Students.Select(s => new { id = s.Student_Id, name = s.Name }).ToList();
+                var message = new { action = "STUDENT_LIST", students };
+                await SendMessage(qcm.Professor.WebSocket, message);
+                Console.WriteLine("Sent student list to professor.");  // Log message
+            }
         }
     }
 
