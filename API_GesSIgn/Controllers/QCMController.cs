@@ -27,7 +27,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="pageSize">Nb de résultat par page</param>
         /// <returns></returns>
         [HttpGet("qcm")]
-        [Authorize]
+        [RoleRequirement(["Professeur", "Gestion Ecole"])]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcm(int pageNumber = 1, int pageSize = 10)
         {
             if (pageNumber <= 0 || pageSize <= 0)
@@ -43,11 +43,18 @@ namespace API_GesSIgn.Controllers
                 return BadRequest($"Page number exceeds total pages ({totalPages}).");
             }
 
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             var qcmList = await _context.QCMs
                 .Include(q => q.QCM_SubjectHour)
                 .ThenInclude(q => q.SubjectsHour_Subjects)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .Where(string.IsNullOrEmpty(schoolIdClaim) ? (q => q.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim)) : (q => true))
                 .ToListAsync();
 
             List<QCMDto> qcmDtos = new List<QCMDto>();
@@ -83,6 +90,10 @@ namespace API_GesSIgn.Controllers
                 .ThenInclude(q => q.SubjectsHour_Subjects)
                 .Where(q => q.QCM_SubjectHour.SubjectsHour_DateStart >= dateRange.StartDate && q.QCM_SubjectHour.SubjectsHour_DateStart <= dateRange.EndDate)
                 .ToListAsync();
+
+            
+            // TODO a fix
+
             List<QCMDto> qCMDtos = new List<QCMDto>();
 
             foreach (var qcm in tmp)
@@ -115,6 +126,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPost("DuplicateQcmByIdQcm/{id}/{SubjectsHour_id}")]
+        [RoleRequirement(["Professeur", "Gestion Ecole"])]
         public async Task<ActionResult<QCMDto>> DuplicateQcmById(int id, int SubjectsHour_id)
         {
             var qcm = await _context.QCMs
@@ -158,6 +170,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPost("AddQuestion/{QCM_id}")]
+        [RoleRequirement(["Professeur", "Gestion Ecole"])]
         public async Task<ActionResult<QuestionDto>> AddQuestion(int QCM_id, CreateQuestionRequest request)
         {
             var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == QCM_id);
@@ -170,7 +183,7 @@ namespace API_GesSIgn.Controllers
             question.Question_QCM_Id = QCM_id;
             question.Question_Text = request.Text;
             var newQuestion = _context.Questions.Add(question);
-
+            await _context.SaveChangesAsync();
             foreach (var option in request.Options)
             {
                 OptionQcm opt = new OptionQcm();
@@ -178,6 +191,7 @@ namespace API_GesSIgn.Controllers
                 opt.OptionQcm_Text = option.Text;
                 opt.OptionQcm_IsCorrect = option.IsCorrect;
                 _context.OptionQcm.Add(opt);
+                await _context.SaveChangesAsync();
             }
 
             await _context.SaveChangesAsync();
@@ -186,17 +200,28 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPost("QCM")]
+        [RoleRequirement(["Professeur", "Gestion Ecole"])]
         public async Task<ActionResult<QCMDto>> AddQcm(CreateQCMRequest createQCM)
         {
             QCM qcm = new QCM();
-            
-            var subjectHour = await _context.SubjectsHour.FirstOrDefaultAsync(s => s.SubjectsHour_Id == createQCM.SubjectHour_id);
+
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
+            var subjectHour = await _context.SubjectsHour
+                .Include(p => p.SubjectsHour_Subjects)
+                .Where(p => p.SubjectsHour_Subjects.Subjects_School_Id == Convert.ToInt32(schoolIdClaim))
+                .FirstOrDefaultAsync(s => s.SubjectsHour_Id == createQCM.SubjectHour_id);
 
             if (subjectHour == null)
             {
                 return NotFound("SubjectHour not found");
             }
             var newQcm = _context.Add(qcm);
+            await _context.SaveChangesAsync();
             if (createQCM != null)
             {
                 foreach (var q in createQCM.Questions) {
@@ -204,7 +229,7 @@ namespace API_GesSIgn.Controllers
                     question.Question_QCM_Id = newQcm.Entity.QCM_Id;
                     question.Question_Text = q.Text;
                     var newQuestion = _context.Questions.Add(question);
-
+                    await _context.SaveChangesAsync();
                     foreach (var option in q.Options)
                     {
                         OptionQcm opt = new OptionQcm();
@@ -212,6 +237,7 @@ namespace API_GesSIgn.Controllers
                         opt.OptionQcm_Text = option.Text;
                         opt.OptionQcm_IsCorrect = option.IsCorrect;
                         _context.OptionQcm.Add(opt);
+                        await _context.SaveChangesAsync();
                     }
                 }
             }
