@@ -1,4 +1,5 @@
-﻿using API_GesSIgn.Models.Request;
+﻿using API_GesSIgn.Models;
+using API_GesSIgn.Models.Request;
 using API_GesSIgn.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,21 +65,61 @@ namespace API_GesSIgn.Controllers
 
             foreach (var qcm in tmp)
             {
-                QCMDto add = new QCMDto();
-                var question = await _context.Questions.Where(q => q.Question_QCM_Id == qcm.QCM_Id).ToListAsync();
-                List<QuestionDto> questionDtos = new List<QuestionDto>();
-                foreach (var q in question)
-                {
-                    var option = await _context.OptionQcm.Where(o => o.OptionQcm_Question_Id == q.Question_Id).ToListAsync();
-                    questionDtos.Add(QuestionDto.FromQuestion(q, option));
-                }
-                add.Id = qcm.QCM_Id;
-                add.Title = qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
-
-                qCMDtos.Add(add);
+                qCMDtos.Add(await QcmToQcmDto(qcm));
             }
 
             return Ok(qCMDtos);
+
+        }
+
+        private async Task<QCMDto> QcmToQcmDto(QCM? qcm)
+        {
+            QCMDto add = new QCMDto();
+            var question = await _context.Questions.Where(q => q.Question_QCM_Id == qcm.QCM_Id).ToListAsync();
+            List<QuestionDto> questionDtos = new List<QuestionDto>();
+            foreach (var q in question)
+            {
+                var option = await _context.OptionQcm.Where(o => o.OptionQcm_Question_Id == q.Question_Id).ToListAsync();
+                questionDtos.Add(QuestionDto.FromQuestion(q, option));
+            }
+            add.Id = qcm.QCM_Id;
+            add.Title = qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+            return add;
+        }
+
+        [HttpPost("DuplicateQcmByIdQcm/{id}/{SubjectsHour_id}")]
+        public async Task<ActionResult<QCMDto>> DuplicateQcmById(int id, int SubjectsHour_id)
+        {
+            var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
+            var subjectHour = await _context.SubjectsHour.FirstOrDefaultAsync(s => s.SubjectsHour_Id == SubjectsHour_id);
+            if (qcm == null && subjectHour == null)
+            {
+                return NotFound();
+            }
+
+            QCMDto old = await QcmToQcmDto(qcm);
+            var add = new QCM();
+            add.QCM_SubjectHour_id = SubjectsHour_id;
+            
+            var newQcm = _context.QCMs.Add(add);
+
+            foreach (var question in old.Questions)
+            {
+                Question qes = new Question();
+                qes.Question_QCM_Id = newQcm.Entity.QCM_Id;
+                qes.Question_Text = question.Text;
+                var newQuestion = _context.Questions.Add(qes);
+                foreach (var option in question.Options)
+                {
+                    OptionQcm opt = new OptionQcm();
+                    opt.OptionQcm_Question_Id = newQuestion.Entity.Question_Id;
+                    opt.OptionQcm_Text = option.Text;
+                    _context.OptionQcm.Add(opt);
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            return Ok("Dupplication efféctué");
 
         }
 
