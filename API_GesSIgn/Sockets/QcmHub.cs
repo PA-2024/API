@@ -60,7 +60,7 @@ namespace API_GesSIgn.Services
             // Join the appropriate QCM session
             if (!_qcmSessions.TryGetValue(qcmId, out CurrentQCM qcm))
             {
-                qcm = new CurrentQCM { Id = qcmId, Questions = new List<QuestionDto>(), Students = new List<StudentQcm>() };
+                qcm = new CurrentQCM { Id = qcmId, Questions = new List<QuestionDto>(), Students = new List<StudentQcm>(), Professor = null };
                 _qcmSessions[qcmId] = qcm;
             }
 
@@ -83,21 +83,29 @@ namespace API_GesSIgn.Services
         private async Task HandleMessage(WebSocket webSocket, CurrentQCM qcm, string message)
         {
             // Handle incoming messages from clients (students/professor)
-            if (message.StartsWith("JOIN:"))
+            if (message.StartsWith("JOIN_STUDENT:"))
             {
-                var studentName = message.Substring(5);
-                var student = new StudentQcm(qcm.Students.Count.ToString(), studentName);
+                var parts = message.Substring(13).Split('|');
+                var studentId = parts[0];
+                var studentName = parts[1];
+                var student = new StudentQcm(studentId, studentName);
                 student.webSocket = webSocket; // Assign the WebSocket to the student
                 qcm.Students.Add(student);
-                Console.WriteLine($"Student {studentName} joined QCM {qcm.Id}");
+                Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
+            }
+            else if (message.StartsWith("JOIN_PROFESSOR:"))
+            {
+                var professorName = message.Substring(15);
+                qcm.Professor = new Professor(professorName, webSocket);
+                Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
             }
             else if (message.StartsWith("ANSWER:"))
             {
                 var parts = message.Substring(7).Split('|');
-                var studentName = parts[0];
+                var studentId = parts[0];
                 var answer = int.Parse(parts[1]);
 
-                var student = qcm.Students.Find(s => s.Name == studentName);
+                var student = qcm.Students.Find(s => s.Student_Id == studentId);
                 if (student != null)
                 {
                     // Handle student answer
@@ -184,6 +192,12 @@ namespace API_GesSIgn.Services
                     await studentWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
                 }
             }
+
+            var professorWebSocket = qcm.Professor?.WebSocket;
+            if (professorWebSocket != null && professorWebSocket.State == WebSocketState.Open)
+            {
+                await professorWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
         }
 
         private async Task SendMessage(WebSocket webSocket, string message)
@@ -199,12 +213,25 @@ namespace API_GesSIgn.Services
         public string Title { get; set; }
         public List<QuestionDto> Questions { get; set; }
         public List<StudentQcm> Students { get; set; }
+        public Professor Professor { get; set; }
         public bool IsRunning { get; set; }
         public int CurrentQuestionIndex { get; set; }
 
         public CurrentQCM()
         {
             Students = new List<StudentQcm>();
+        }
+    }
+
+    public class Professor
+    {
+        public string Name { get; set; }
+        public WebSocket WebSocket { get; set; }
+
+        public Professor(string name, WebSocket webSocket)
+        {
+            Name = name;
+            WebSocket = webSocket;
         }
     }
 }
