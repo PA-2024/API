@@ -157,12 +157,15 @@ app.Use(async (context, next) =>
         var webSocketHandler = context.RequestServices.GetRequiredService<WebSocketHandler>();
         await webSocketHandler.Handle(context);
     }
+    else if (context.Request.Path.StartsWithSegments("/qcm"))
+    {
+        var qcmWebSocketHandler = context.RequestServices.GetRequiredService<QCMWebSocketHandler>();
+    }
     else
     {
         await next();
     }
 });
-
 app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
