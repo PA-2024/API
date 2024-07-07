@@ -137,7 +137,7 @@ namespace API_GesSIgn.Sockets
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        private bool ValidateToken(string token)
+        public static bool ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");

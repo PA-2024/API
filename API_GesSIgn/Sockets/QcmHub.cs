@@ -1,6 +1,7 @@
 ﻿using API_GesSIgn.Models;
 using API_GesSIgn.Models.Response;
 using API_GesSIgn.Services;
+using API_GesSIgn.Sockets;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
@@ -87,6 +88,14 @@ namespace API_GesSIgn.Services
             {
                 var parts = message.Substring(13).Split('|');
                 var studentId = parts[0];
+                var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
+                
+                if (findStudent != null)
+                {
+                    findStudent.webSocket = webSocket;
+                    Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Id}");
+                    return;
+                }
                 var studentName = parts[1];
                 var student = new StudentQcm(studentId, studentName);
                 student.webSocket = webSocket; // Assign the WebSocket to the student
@@ -95,9 +104,21 @@ namespace API_GesSIgn.Services
             }
             else if (message.StartsWith("JOIN_PROFESSOR:"))
             {
-                var professorName = message.Substring(15);
-                qcm.Professor = new Professor(professorName, webSocket);
-                Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
+                var parts = message.Substring(13).Split('|');
+                if (WebSocketHandler.ValidateToken(parts[0]))
+                    if (qcm.Professor != null)
+                    {
+                        qcm.Professor.WebSocket = webSocket;
+                        Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
+                        return;
+                    }
+                    else
+                    {
+                        var professorName = message.Substring(15);
+                        qcm.Professor = new Professor(professorName, webSocket);
+                        Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
+                    }
+                )
             }
             else if (message.StartsWith("ANSWER:"))
             {
@@ -127,6 +148,8 @@ namespace API_GesSIgn.Services
             {
                 qcm.IsRunning = false;
             }
+            // ajouter un message pour stopper le QCM
+
         }
 
         private async Task StartQCM(int qcmId, CurrentQCM qcm)
