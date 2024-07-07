@@ -2,55 +2,35 @@
 using API_GesSIgn.Models.Response;
 using API_GesSIgn.Services;
 using API_GesSIgn.Sockets;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace API_GesSIgn.Services
 {
     public class QCMWebSocketHandler
     {
-        private readonly HttpListener _listener;
         private readonly ConcurrentDictionary<string, CurrentQCM> _qcmSessions;
-        private readonly IQcmService _qcmService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public QCMWebSocketHandler(string uriPrefix, IQcmService qcmService)
+        public QCMWebSocketHandler(IServiceScopeFactory serviceScopeFactory)
         {
-            _listener = new HttpListener();
-            _listener.Prefixes.Add(uriPrefix);
             _qcmSessions = new ConcurrentDictionary<string, CurrentQCM>();
-            _qcmService = qcmService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public void Start()
+        public async Task Handle(HttpContext context)
         {
-            _listener.Start();
-            Console.WriteLine("WebSocket server started...");
-            Task.Run(() => AcceptConnections());
-        }
-
-        private async Task AcceptConnections()
-        {
-            while (true)
+            if (context.WebSockets.IsWebSocketRequest)
             {
-                var context = await _listener.GetContextAsync();
-
-                if (context.Request.IsWebSocketRequest)
-                {
-                    var wsContext = await context.AcceptWebSocketAsync(null);
-                    Task.Run(() => HandleClient(wsContext.WebSocket, context.Request.Url.AbsolutePath.Trim('/')));
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
-                    context.Response.Close();
-                }
+                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                string qcmId = context.Request.Path.ToString().Trim('/');
+                await HandleClient(webSocket, qcmId);
+            }
+            else
+            {
+                context.Response.StatusCode = 400;
             }
         }
 
@@ -83,84 +63,82 @@ namespace API_GesSIgn.Services
 
         private async Task HandleMessage(WebSocket webSocket, CurrentQCM qcm, string message)
         {
-            // Handle incoming messages from clients (students/professor)
-            if (message.StartsWith("JOIN_STUDENT:"))
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                var parts = message.Substring(13).Split('|');
-                var studentId = parts[0];
-                var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
+                var qcmService = scope.ServiceProvider.GetRequiredService<IQcmService>();
 
-                if (findStudent != null)
+                // Handle incoming messages from clients (students/professor)
+                if (message.StartsWith("JOIN_STUDENT:"))
                 {
-                    findStudent.webSocket = webSocket;
-                    Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Id}");
-                    return;
-                }
-                var studentName = parts[1];
-                var student = new StudentQcm(studentId, studentName);
-                student.webSocket = webSocket; // Assign the WebSocket to the student
-                qcm.Students.Add(student);
-                Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
-            }
-            else if (message.StartsWith("JOIN_PROFESSOR:"))
-            {
-                var parts = message.Substring(13).Split('|');
-                if (WebSocketHandler.ValidateToken(parts[0])) { 
-                    if (qcm.Professor != null)
+                    var parts = message.Substring(13).Split('|');
+                    var studentId = parts[0];
+                    var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
+
+                    if (findStudent != null)
                     {
-                        qcm.Professor.WebSocket = webSocket;
-                        Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
+                        findStudent.webSocket = webSocket;
+                        Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Id}");
                         return;
                     }
-                    else
-                    {
-                        var professorName = message.Substring(15);
-                        qcm.Professor = new Professor(professorName, webSocket);
-                        Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
-                    }
+                    var studentName = parts[1];
+                    var student = new StudentQcm(studentId, studentName);
+                    student.webSocket = webSocket; // Assign the WebSocket to the student
+                    qcm.Students.Add(student);
+                    Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
                 }
-            }
-            else if (message.StartsWith("ANSWER:"))
-            {
-                var parts = message.Substring(7).Split('|');
-                var studentId = parts[0];
-                var answer = int.Parse(parts[1]);
-
-                var student = qcm.Students.Find(s => s.Student_Id == studentId);
-                if (student != null)
+                else if (message.StartsWith("JOIN_PROFESSOR:"))
                 {
-                    // Handle student answer
-                    var question = qcm.Questions[qcm.CurrentQuestionIndex];
-                    if (question != null && question.CorrectOption.Contains(answer))
+                    var parts = message.Substring(15).Split('|');
+                    if (WebSocketHandler.ValidateToken(parts[0]))
                     {
-                        student.Score += 10;
+                        if (qcm.Professor != null)
+                        {
+                            qcm.Professor.WebSocket = webSocket;
+                            Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
+                            return;
+                        }
+                        else
+                        {
+                            var professorName = parts[1];
+                            qcm.Professor = new Professor(professorName, webSocket);
+                            Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
+                        }
                     }
-                    var feedback = question.CorrectOption.Contains(answer) ? "Correct" : "Incorrect";
-                    await SendMessage(webSocket, feedback);
+                }
+                else if (message.StartsWith("ANSWER:"))
+                {
+                    var parts = message.Substring(7).Split('|');
+                    var studentId = parts[0];
+                    var answer = int.Parse(parts[1]);
+
+                    var student = qcm.Students.Find(s => s.Student_Id == studentId);
+                    if (student != null)
+                    {
+                        // Handle student answer
+                        var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                        if (question != null && question.CorrectOption.Contains(answer))
+                        {
+                            student.Score += 10;
+                        }
+                        var feedback = question.CorrectOption.Contains(answer) ? "Correct" : "Incorrect";
+                        await SendMessage(webSocket, feedback);
+                    }
+                }
+                else if (message.StartsWith("START:"))
+                {
+                    var qcmId = int.Parse(message.Substring(6));
+                    await StartQCM(qcmId, qcmService, qcm);
+                }
+                else if (message == "PAUSE")
+                {
+                    qcm.IsRunning = false;
                 }
             }
-            else if (message.StartsWith("START:"))
-            {
-                var qcmId = int.Parse(message.Substring(6));
-                await StartQCM(qcmId, qcm);
-            }
-            else if (message == "PAUSE")
-            {
-                qcm.IsRunning = false;
-            }
-            else if (message.StartsWith("PAUSE"))
-            {
-                //TODO Check if the message is from the professeur
-                qcm.IsRunning = false;
-                // sauvegarde du qcm en cours
-            }
-            // ajouter un message pour stopper le QCM
-
         }
 
-        private async Task StartQCM(int qcmId, CurrentQCM qcm)
+        private async Task StartQCM(int qcmId, IQcmService qcmService, CurrentQCM qcm)
         {
-            var qcmDto = await _qcmService.GetQCMByIdAsync(qcmId);
+            var qcmDto = await qcmService.GetQCMByIdAsync(qcmId);
             if (qcmDto == null)
             {
                 Console.WriteLine("QCM not found.");

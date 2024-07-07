@@ -118,8 +118,12 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<MonDbContext>(options =>
     options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
 
+// Register WebSocket handlers with DI container
 builder.Services.AddSingleton<WebSocketHandler>();
+builder.Services.AddSingleton<QCMWebSocketHandler>();
 builder.Services.AddScoped<IQcmService, QcmService>();
+builder.Services.AddScoped<QCMWebSocketHandler>();
+
 
 var app = builder.Build();
 
@@ -160,12 +164,14 @@ app.Use(async (context, next) =>
     else if (context.Request.Path.StartsWithSegments("/qcm"))
     {
         var qcmWebSocketHandler = context.RequestServices.GetRequiredService<QCMWebSocketHandler>();
+        await qcmWebSocketHandler.Handle(context);
     }
     else
     {
         await next();
     }
 });
+
 app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
