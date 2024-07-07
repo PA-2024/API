@@ -2,6 +2,8 @@
 using API_GesSIgn.Models;
 using API_GesSIgn.Models.Request;
 using API_GesSIgn.Models.Response;
+using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +27,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="pageSize">Nb de résultat par page</param>
         /// <returns></returns>
         [HttpGet("qcm")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcm(int pageNumber = 1, int pageSize = 10)
         {
             if (pageNumber <= 0 || pageSize <= 0)
@@ -79,7 +82,7 @@ namespace API_GesSIgn.Controllers
         }
 
         /// <summary>
-        /// QCM par datez comme lié a une heure de cours
+        /// QCM par datez comme lié a une heure de cours, sans les réponses
         /// </summary>
         /// <param name="dateRange"></param>
         /// <returns></returns>
@@ -95,7 +98,11 @@ namespace API_GesSIgn.Controllers
 
             foreach (var qcm in tmp)
             {
-                qCMDtos.Add(await QcmToQcmDto(qcm));
+                QCMDto add = new QCMDto();               
+                add.Id = qcm.QCM_Id;
+                add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+
+                qCMDtos.Add(add);
             }
 
             return Ok(qCMDtos);
@@ -151,6 +158,68 @@ namespace API_GesSIgn.Controllers
 
             return Ok("Dupplication efféctué");
 
+        }
+
+        [HttpPost("AddQuestion/{QCM_id}")]
+        public async Task<ActionResult<QuestionDto>> AddQuestion(int QCM_id, CreateQuestionRequest request)
+        {
+            var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == QCM_id);
+            if (qcm == null)
+            {
+                return NotFound();
+            }
+
+            var question = new Question();
+            question.Question_QCM_Id = QCM_id;
+            question.Question_Text = request.Text;
+            var newQuestion = _context.Questions.Add(question);
+
+            foreach (var option in request.Options)
+            {
+                OptionQcm opt = new OptionQcm();
+                opt.OptionQcm_Question_Id = newQuestion.Entity.Question_Id;
+                opt.OptionQcm_Text = option.Text;
+                opt.OptionQcm_IsCorrect = option.IsCorrect;
+                _context.OptionQcm.Add(opt);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Question ajouté");
+        }
+
+        [HttpPost("QCM")]
+        public async Task<ActionResult<QCMDto>> AddQcm(CreateQCMRequest createQCM)
+        {
+            QCM qcm = new QCM();
+            
+            var subjectHour = await _context.SubjectsHour.FirstOrDefaultAsync(s => s.SubjectsHour_Id == createQCM.SubjectHour_id);
+
+            if (subjectHour == null)
+            {
+                return NotFound("SubjectHour not found");
+            }
+            var newQcm = _context.Add(qcm);
+            if (createQCM != null)
+            {
+                foreach (var q in createQCM.Questions) {
+                    var question = new Question();
+                    question.Question_QCM_Id = newQcm.Entity.QCM_Id;
+                    question.Question_Text = q.Text;
+                    var newQuestion = _context.Questions.Add(question);
+
+                    foreach (var option in q.Options)
+                    {
+                        OptionQcm opt = new OptionQcm();
+                        opt.OptionQcm_Question_Id = newQuestion.Entity.Question_Id;
+                        opt.OptionQcm_Text = option.Text;
+                        opt.OptionQcm_IsCorrect = option.IsCorrect;
+                        _context.OptionQcm.Add(opt);
+                    }
+                }
+            }
+            await _context.SaveChangesAsync();
+            return Ok("Question ajouté");
         }
 
         
