@@ -194,6 +194,7 @@ namespace API_GesSIgn.Services
 
                 // Broadcast the question to all students and professor
                 await BroadcastMessage(qcm, questionMessage);
+                Console.WriteLine(questionMessage);
                 Console.WriteLine("Sent question to all clients.");  // Log message
 
                 await Task.Delay(20000); // Wait 20 seconds for answers
