@@ -8,19 +8,6 @@ namespace API_GesSIgn.Models.Response
         public int Id { get; set; }
         public string Title { get; set; }
         public List<QuestionDto> Questions { get; set; }
-        public List<StudentQcm> Students { get; set; }
-
-
-        public QCMDto()
-        {
-            Students = new List<StudentQcm>();
-        }
-
-        public void addStudent(Student student)
-        {
-            Students.Add(StudentQcm.FromStudent(student));
-        }
-
 
     }
 
@@ -47,11 +34,26 @@ namespace API_GesSIgn.Models.Response
         }
     }
 
+    public class OptionDto
+    {
+        public int Id { get; set; }
+        public string Text { get; set; }
+
+        public static OptionDto FromOption(OptionQcm option)
+        {
+            OptionDto res = new OptionDto();
+            res.Id = option.OptionQcm_id;
+            
+            res.Text = option.OptionQcm_Text;
+            return res;
+        }
+    }
+
     public class QuestionDto
     {
         public int Id { get; set; }
         public string Text { get; set; }
-        public List<string> Options { get; set; }
+        public List<OptionDto> Options { get; set; }
 
         public List<int> CorrectOption { get; set; }
 
@@ -60,12 +62,12 @@ namespace API_GesSIgn.Models.Response
             QuestionDto res = new QuestionDto();
             res.Id = question.Question_Id;
             res.Text = question.Question_Text;
-            res.Options = new List<string>();
+            res.Options = new List<OptionDto>();
             res.CorrectOption = new List<int>();
 
             foreach (OptionQcm option in options)
             {
-                res.Options.Add(option.OptionQcm_Text);
+                res.Options.Add(OptionDto.FromOption(option));
                 if (option.OptionQcm_IsCorrect)
                 {
                     res.CorrectOption.Add(option.OptionQcm_id);

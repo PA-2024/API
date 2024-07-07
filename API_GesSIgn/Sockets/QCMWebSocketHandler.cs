@@ -46,12 +46,6 @@ namespace API_GesSIgn.Services
         {
             byte[] buffer = new byte[1024];
             Console.WriteLine($"QCM {_qcmSessions.Count} session avant");
-            foreach (var key in _qcmSessions.Keys)
-            {
-                Console.WriteLine($"QCM {key}");
-                Console.WriteLine($"QCM {_qcmSessions[key].Professor.Name}");
-
-            }
             Console.WriteLine(qcmId);
             // Ensure the QCM session is created and added to the dictionary
             var qcm = _qcmSessions.GetOrAdd(qcmId, id => new CurrentQCM
@@ -155,6 +149,7 @@ namespace API_GesSIgn.Services
                     {
                         // Handle student answer
                         var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                        Console.WriteLine($"Corect reponse is : " + question.CorrectOption[0]);
                         if (question != null && question.CorrectOption.Contains(answer))
                         {
                             student.Score += 10;
@@ -166,18 +161,19 @@ namespace API_GesSIgn.Services
                 else if (action == "START")
                 {
                     int qcm_Id = parsedMessage.qcmId;
-                    await StartQCM(qcm_Id, qcmService, qcm);
+                    await StartQCM(qcm_Id, qcmService, session_qcmId);
                 }
                 else if (action == "PAUSE")
                 {
                     qcm.IsRunning = false;
                 }
-
+                _qcmSessions[session_qcmId] = qcm;
             }
         }
 
-        private async Task StartQCM(int qcmId, IQcmService qcmService, CurrentQCM qcm)
+        private async Task StartQCM(int qcmId, IQcmService qcmService, string session_qcmId)
         {
+            CurrentQCM qcm = _qcmSessions[session_qcmId];
             var qcmDto = await qcmService.GetQCMByIdAsync(qcmId);
             if (qcmDto == null)
             {
@@ -195,7 +191,6 @@ namespace API_GesSIgn.Services
 
             qcm.Title = qcmDto.Title;
             qcm.Questions = qcmDto.Questions;
-            qcm.Students = qcmDto.Students;
 
             qcm.IsRunning = true;
             qcm.CurrentQuestionIndex = 0;
@@ -207,7 +202,7 @@ namespace API_GesSIgn.Services
                 await SendMessage(qcm.Professor.WebSocket, startMessage);
                 Console.WriteLine("Sent start message to professor.");  // Log message
             }
-
+            Console.WriteLine("Nombre d'étudiants: " + qcm.Students.Count);
             await RunQCM(qcm);
         }
 
@@ -216,6 +211,7 @@ namespace API_GesSIgn.Services
             while (qcm.CurrentQuestionIndex < qcm.Questions.Count && qcm.IsRunning)
             {
                 var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                var listOption = question.Options.Select(s => new { id = s.Id, Text = s.Text }).ToList();
                 var questionMessage = new { action = "QUESTION", id = question.Id, text = question.Text, options = question.Options };
 
                 // Broadcast the question to all students and professor
@@ -230,7 +226,8 @@ namespace API_GesSIgn.Services
 
                 qcm.CurrentQuestionIndex++;
             }
-
+            var endMessage = new { action = "END", message = "End of the questions" };
+            BroadcastMessage(qcm, endMessage).Wait();
             qcm.IsRunning = false;
         }
 
@@ -247,10 +244,17 @@ namespace API_GesSIgn.Services
             Console.WriteLine("Sent ranking to all clients.");  // Log message
         }
 
+        /// <summary>
+        /// Envoie un message à tous les étudiants et au professeur 
+        /// </summary>
+        /// <param name="qcm"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         private async Task BroadcastMessage(CurrentQCM qcm, object message)
         {
             var messageString = JsonConvert.SerializeObject(message);
             var messageBytes = Encoding.UTF8.GetBytes(messageString);
+            Console.WriteLine(qcm.Students.Count);
             foreach (var student in qcm.Students)
             {
                 var studentWebSocket = student.webSocket;
@@ -274,6 +278,7 @@ namespace API_GesSIgn.Services
             var messageBytes = Encoding.UTF8.GetBytes(messageString);
             await webSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
         }
+
 
         private async Task NotifyProfessor(CurrentQCM qcm)
         {
