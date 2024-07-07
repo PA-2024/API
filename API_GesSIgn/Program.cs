@@ -164,7 +164,6 @@ app.Use(async (context, next) =>
 });
 
 app.MapControllers();
-app.MapHub<QcmHub>("/qcmHub");
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run("http://*:" + port);
