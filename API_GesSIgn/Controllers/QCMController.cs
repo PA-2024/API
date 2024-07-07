@@ -1,4 +1,5 @@
-﻿using API_GesSIgn.Models;
+﻿using API_GesSIgn.Helpers;
+using API_GesSIgn.Models;
 using API_GesSIgn.Models.Request;
 using API_GesSIgn.Models.Response;
 using Microsoft.AspNetCore.Mvc;
@@ -17,35 +18,64 @@ namespace API_GesSIgn.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Get qcm 
+        /// </summary>
+        /// <param name="pageNumber">page a rechercher</param>
+        /// <param name="pageSize">Nb de résultat par page</param>
+        /// <returns></returns>
         [HttpGet("qcm")]
-        public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcm()
+        public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcm(int pageNumber = 1, int pageSize = 10)
         {
-            var tmp =  await _context.QCMs
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Page number and page size must be greater than zero.");
+            }
+
+            var totalQcmCount = await _context.QCMs.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalQcmCount / (double)pageSize);
+
+            if (pageNumber > totalPages)
+            {
+                return BadRequest($"Page number exceeds total pages ({totalPages}).");
+            }
+
+            var qcmList = await _context.QCMs
                 .Include(q => q.QCM_SubjectHour)
                 .ThenInclude(q => q.SubjectsHour_Subjects)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
-            List<QCMDto> qCMDtos = new List<QCMDto>();
-            
-            foreach (var qcm in tmp)
+
+            List<QCMDto> qcmDtos = new List<QCMDto>();
+
+            foreach (var qcm in qcmList)
             {
                 QCMDto add = new QCMDto();
-                var question = await _context.Questions.Where(q => q.Question_QCM_Id == qcm.QCM_Id).ToListAsync();
+                var questions = await _context.Questions.Where(q => q.Question_QCM_Id == qcm.QCM_Id).ToListAsync();
                 List<QuestionDto> questionDtos = new List<QuestionDto>();
-                foreach (var q in question)
+                foreach (var question in questions)
                 {
-                    var option = await _context.OptionQcm.Where(o => o.OptionQcm_Question_Id == q.Question_Id).ToListAsync();
-                    questionDtos.Add(QuestionDto.FromQuestion(q, option));
+                    var options = await _context.OptionQcm.Where(o => o.OptionQcm_Question_Id == question.Question_Id).ToListAsync();
+                    questionDtos.Add(QuestionDto.FromQuestion(question, options));
                 }
                 add.Questions = questionDtos;
                 add.Id = qcm.QCM_Id;
                 add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
-                
-                qCMDtos.Add(add);
+
+                qcmDtos.Add(add);
             }
 
-            return Ok(qCMDtos);
+            var paginatedResult = new PaginatedResult<QCMDto>
+            {
+                Items = qcmDtos,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = totalPages,
+                TotalItems = totalQcmCount
+            };
 
-
+            return Ok(paginatedResult);
         }
 
         /// <summary>
