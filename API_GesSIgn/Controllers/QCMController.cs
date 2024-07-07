@@ -83,6 +83,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("qcmByRange")]
+        [RoleRequirement(["Professeur", "Gestion Ecole"])]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmByrange([FromQuery] DateRangeRequest dateRange)
         {
             var tmp = await _context.QCMs
@@ -92,7 +93,33 @@ namespace API_GesSIgn.Controllers
                 .ToListAsync();
 
             
-            // TODO a fix
+            // TODO ajouter check école 
+
+            List<QCMDto> qCMDtos = new List<QCMDto>();
+
+            foreach (var qcm in tmp)
+            {
+                QCMDto add = QcmToQcmDto(qcm).Result;
+                qCMDtos.Add(add);
+            }
+
+            return Ok(qCMDtos);
+
+        }
+
+        // <summary>
+        /// QCM par datez comme lié a une heure de cours, sans les réponses
+        /// </summary>
+        /// <param name="dateRange"></param>
+        /// <returns></returns>
+        [HttpGet("byId/{id}")]
+        public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmById(int id)
+        {
+            var tmp = await _context.QCMs
+                .Include(q => q.QCM_SubjectHour)
+                .ThenInclude(q => q.SubjectsHour_Subjects)
+                .Where(q => q.QCM_Id == id)
+                .ToListAsync();
 
             List<QCMDto> qCMDtos = new List<QCMDto>();
 
