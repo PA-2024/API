@@ -89,7 +89,7 @@ namespace API_GesSIgn.Services
                 var parts = message.Substring(13).Split('|');
                 var studentId = parts[0];
                 var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
-                
+
                 if (findStudent != null)
                 {
                     findStudent.webSocket = webSocket;
@@ -105,7 +105,7 @@ namespace API_GesSIgn.Services
             else if (message.StartsWith("JOIN_PROFESSOR:"))
             {
                 var parts = message.Substring(13).Split('|');
-                if (WebSocketHandler.ValidateToken(parts[0]))
+                if (WebSocketHandler.ValidateToken(parts[0])) { 
                     if (qcm.Professor != null)
                     {
                         qcm.Professor.WebSocket = webSocket;
@@ -118,7 +118,7 @@ namespace API_GesSIgn.Services
                         qcm.Professor = new Professor(professorName, webSocket);
                         Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
                     }
-                )
+                }
             }
             else if (message.StartsWith("ANSWER:"))
             {
@@ -147,6 +147,12 @@ namespace API_GesSIgn.Services
             else if (message == "PAUSE")
             {
                 qcm.IsRunning = false;
+            }
+            else if (message.StartsWith("PAUSE"))
+            {
+                //TODO Check if the message is from the professeur
+                qcm.IsRunning = false;
+                // sauvegarde du qcm en cours
             }
             // ajouter un message pour stopper le QCM
 
