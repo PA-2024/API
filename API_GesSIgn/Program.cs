@@ -118,12 +118,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddDbContext<MonDbContext>(options =>
     options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
 
-// Register WebSocket handlers with DI container
+// Register WebSocketHandler as singleton
 builder.Services.AddSingleton<WebSocketHandler>();
 builder.Services.AddSingleton<QCMWebSocketHandler>();
 builder.Services.AddScoped<IQcmService, QcmService>();
-builder.Services.AddScoped<QCMWebSocketHandler>();
-
 
 var app = builder.Build();
 

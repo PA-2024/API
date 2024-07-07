@@ -45,13 +45,23 @@ namespace API_GesSIgn.Services
         private async Task HandleClient(WebSocket webSocket, string qcmId)
         {
             byte[] buffer = new byte[1024];
-
-            // Join the appropriate QCM session
-            if (!_qcmSessions.TryGetValue(qcmId, out CurrentQCM qcm))
+            Console.WriteLine($"QCM {_qcmSessions.Count} session avant");
+            foreach (var key in _qcmSessions.Keys)
             {
-                qcm = new CurrentQCM { Id = qcmId, Questions = new List<QuestionDto>(), Students = new List<StudentQcm>(), Professor = null };
-                _qcmSessions[qcmId] = qcm;
+                Console.WriteLine($"QCM {key}");
+                Console.WriteLine($"QCM {_qcmSessions[key].Professor.Name}");
+
             }
+            Console.WriteLine(qcmId);
+            // Ensure the QCM session is created and added to the dictionary
+            var qcm = _qcmSessions.GetOrAdd(qcmId, id => new CurrentQCM
+            {
+                Id = id,
+                Questions = new List<QuestionDto>(),
+                Students = new List<StudentQcm>(),
+                Professor = null
+            });
+            Console.WriteLine($"QCM {_qcmSessions.Count} session en cours.");
 
             while (webSocket.State == WebSocketState.Open)
             {
@@ -65,13 +75,14 @@ namespace API_GesSIgn.Services
                 {
                     var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     Console.WriteLine($"Received message: {message}");  // Log received message
-                    await HandleMessage(webSocket, qcm, message);
+                    await HandleMessage(webSocket, qcmId, message);
                 }
             }
         }
 
-        private async Task HandleMessage(WebSocket webSocket, CurrentQCM qcm, string message)
+        private async Task HandleMessage(WebSocket webSocket, string session_qcmId, string message)
         {
+            CurrentQCM qcm = _qcmSessions[session_qcmId];
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var qcmService = scope.ServiceProvider.GetRequiredService<IQcmService>();
@@ -79,8 +90,41 @@ namespace API_GesSIgn.Services
                 dynamic parsedMessage = JsonConvert.DeserializeObject(message);
                 string action = parsedMessage.action;
 
-                if (action == "JOIN_STUDENT")
+                if (action == "JOIN_PROFESSOR")
                 {
+                    string token = parsedMessage.token;
+                    string professorName = parsedMessage.professorName;
+
+                    if (WebSocketHandler.ValidateToken(token))
+                    {
+                        if (qcm.Professor != null)
+                        {
+                            qcm.Professor.WebSocket = webSocket;
+                            Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
+                        }
+                        else
+                        {
+                            qcm.Professor = new Professor(professorName, webSocket);
+                            Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
+                        }
+                    }
+                    else // Invalid token
+                    {
+                        var errorMessage = new { action = "ERROR", message = "Invalid token." };
+                        await SendMessage(webSocket, errorMessage); // Send error message to the professor
+                        Console.WriteLine(JsonConvert.SerializeObject(errorMessage));  // Log message
+                    }
+                }
+                else if (action == "JOIN_STUDENT")
+                {
+                    if (qcm.Professor == null)
+                    {
+                        var errorMessage = new { action = "ERROR", message = "Professor has not joined the QCM yet." };
+                        await SendMessage(webSocket, errorMessage); // Send error message to the student
+                        Console.WriteLine(JsonConvert.SerializeObject(errorMessage));  // Log message
+                        return;
+                    }
+
                     string studentId = parsedMessage.studentId;
                     string studentName = parsedMessage.studentName;
                     var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
@@ -100,25 +144,6 @@ namespace API_GesSIgn.Services
 
                     // Notify the professor
                     await NotifyProfessor(qcm);
-                }
-                else if (action == "JOIN_PROFESSOR")
-                {
-                    string token = parsedMessage.token;
-                    string professorName = parsedMessage.professorName;
-
-                    if (WebSocketHandler.ValidateToken(token))
-                    {
-                        if (qcm.Professor != null)
-                        {
-                            qcm.Professor.WebSocket = webSocket;
-                            Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
-                        }
-                        else
-                        {
-                            qcm.Professor = new Professor(professorName, webSocket);
-                            Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
-                        }
-                    }
                 }
                 else if (action == "ANSWER")
                 {
@@ -140,13 +165,14 @@ namespace API_GesSIgn.Services
                 }
                 else if (action == "START")
                 {
-                    int qcmId = parsedMessage.qcmId;
-                    await StartQCM(qcmId, qcmService, qcm);
+                    int qcm_Id = parsedMessage.qcmId;
+                    await StartQCM(qcm_Id, qcmService, qcm);
                 }
                 else if (action == "PAUSE")
                 {
                     qcm.IsRunning = false;
                 }
+
             }
         }
 
@@ -194,7 +220,6 @@ namespace API_GesSIgn.Services
 
                 // Broadcast the question to all students and professor
                 await BroadcastMessage(qcm, questionMessage);
-                Console.WriteLine(questionMessage);
                 Console.WriteLine("Sent question to all clients.");  // Log message
 
                 await Task.Delay(20000); // Wait 20 seconds for answers
