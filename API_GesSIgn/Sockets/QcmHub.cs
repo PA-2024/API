@@ -1,153 +1,210 @@
 ﻿using API_GesSIgn.Models;
 using API_GesSIgn.Models.Response;
 using API_GesSIgn.Services;
-using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace API_GesSIgn.Sockets
+namespace API_GesSIgn.Services
 {
-    public class QcmHub : Hub
+    public class QCMWebSocketHandler
     {
-        private static ConcurrentDictionary<string, StudentQcm> students = new ConcurrentDictionary<string, StudentQcm>();
-        private static QCMDto currentQCM;
-        private static bool isQCMRunning = false;
-        private static int currentQuestionIndex = 0;
-        private static string professorConnectionId = null;
+        private readonly HttpListener _listener;
+        private readonly ConcurrentDictionary<string, CurrentQCM> _qcmSessions;
         private readonly IQcmService _qcmService;
 
-        public QcmHub(IQcmService qcmService)
+        public QCMWebSocketHandler(string uriPrefix, IQcmService qcmService)
         {
+            _listener = new HttpListener();
+            _listener.Prefixes.Add(uriPrefix);
+            _qcmSessions = new ConcurrentDictionary<string, CurrentQCM>();
             _qcmService = qcmService;
         }
 
-        public override Task OnConnectedAsync()
+        public void Start()
         {
-            if (Context.User.IsInRole("Professeur"))
-            {
-                professorConnectionId = Context.ConnectionId;
-                Console.WriteLine("Professor connected: " + Context.User.Identity.Name);
-            }
-            else
-            {
-                var student = new StudentQcm { Student_Id = Context.ConnectionId, Name = Context.User.Identity.Name };
-                students.TryAdd(Context.ConnectionId, student);
-                Console.WriteLine("Student connected: " + student.Name);
-            }
-            return base.OnConnectedAsync();
+            _listener.Start();
+            Console.WriteLine("WebSocket server started...");
+            Task.Run(() => AcceptConnections());
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        private async Task AcceptConnections()
         {
-            if (Context.User.IsInRole("Professeur"))
+            while (true)
             {
-                professorConnectionId = null;
-                Console.WriteLine("Professor disconnected: " + Context.ConnectionId);
-            }
-            else
-            {
-                students.TryRemove(Context.ConnectionId, out _);
-                Console.WriteLine("Student disconnected: " + Context.ConnectionId);
-            }
-            return base.OnDisconnectedAsync(exception);
-        }
+                var context = await _listener.GetContextAsync();
 
-        public async Task StartQCM(int qcmId)
-        {
-            if (Context.ConnectionId != professorConnectionId)
-            {
-                await Clients.Caller.SendAsync("Error", "Only the professor can start the QCM.");
-                return;
-            }
-
-            var qcm = await _qcmService.GetQCMByIdAsync(qcmId);
-            if (qcm == null)
-            {
-                await Clients.Caller.SendAsync("Error", "QCM not found.");
-                return;
-            }
-
-            currentQCM = qcm;
-            currentQuestionIndex = 0;
-            isQCMRunning = true;
-
-            await Clients.All.SendAsync("QcmStarted", qcm);
-
-            await RunQCM();
-        }
-
-        public async Task SendAnswer(string answer)
-        {
-            if (students.TryGetValue(Context.ConnectionId, out var student))
-            {
-                var question = currentQCM.Questions[currentQuestionIndex];
-                if (question != null)
+                if (context.Request.IsWebSocketRequest)
                 {
-                    var correctAnswers = question.CorrectOption.Select(opt => opt.ToString()).ToArray();
-                    bool isCorrect = correctAnswers.Contains(answer);
-                    if (isCorrect)
-                    {
-                        student.Score += 10; // Adding 10 points for a correct answer
-                    }
-                    await Clients.Caller.SendAsync("AnswerFeedback", isCorrect ? "Correct" : "Incorrect");
+                    var wsContext = await context.AcceptWebSocketAsync(null);
+                    Task.Run(() => HandleClient(wsContext.WebSocket, context.Request.Url.AbsolutePath.Trim('/')));
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
+                    context.Response.Close();
                 }
             }
         }
 
-        private async Task RunQCM()
+        private async Task HandleClient(WebSocket webSocket, string qcmId)
         {
-            while (currentQuestionIndex < currentQCM.Questions.Count)
+            byte[] buffer = new byte[1024];
+
+            // Join the appropriate QCM session
+            if (!_qcmSessions.TryGetValue(qcmId, out CurrentQCM qcm))
             {
-                if (!isQCMRunning) break;
-
-                var question = currentQCM.Questions[currentQuestionIndex];
-                await Clients.All.SendAsync("NewQuestion", question);
-
-                await Task.Delay(20000); // Wait 20 seconds before sending the next question
-
-                await SendRanking();
-
-                await Task.Delay(10000); // Delay 10 seconds for displaying the ranking
-
-                currentQuestionIndex++;
+                qcm = new CurrentQCM { Id = qcmId, Questions = new List<QuestionDto>(), Students = new List<StudentQcm>() };
+                _qcmSessions[qcmId] = qcm;
             }
 
-            isQCMRunning = false;
-            await Clients.All.SendAsync("QcmEnded");
-        }
-
-        private async Task SendRanking()
-        {
-            var ranking = students.Values.OrderByDescending(s => s.Score).ToList();
-            await Clients.All.SendAsync("Ranking", ranking);
-        }
-
-        public async Task PauseQCM()
-        {
-            if (Context.ConnectionId != professorConnectionId)
+            while (webSocket.State == WebSocketState.Open)
             {
-                await Clients.Caller.SendAsync("Error", "Only the professor can pause the QCM.");
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                    break;
+                }
+                else
+                {
+                    var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    await HandleMessage(webSocket, qcm, message);
+                }
+            }
+        }
+
+        private async Task HandleMessage(WebSocket webSocket, CurrentQCM qcm, string message)
+        {
+            // Handle incoming messages from clients (students/professor)
+            if (message.StartsWith("JOIN:"))
+            {
+                var studentName = message.Substring(5);
+                var student = new StudentQcm(qcm.Students.Count.ToString(), studentName);
+                student.webSocket = webSocket; // Assign the WebSocket to the student
+                qcm.Students.Add(student);
+                Console.WriteLine($"Student {studentName} joined QCM {qcm.Id}");
+            }
+            else if (message.StartsWith("ANSWER:"))
+            {
+                var parts = message.Substring(7).Split('|');
+                var studentName = parts[0];
+                var answer = int.Parse(parts[1]);
+
+                var student = qcm.Students.Find(s => s.Name == studentName);
+                if (student != null)
+                {
+                    // Handle student answer
+                    var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                    if (question != null && question.CorrectOption.Contains(answer))
+                    {
+                        student.Score += 10;
+                    }
+                    var feedback = question.CorrectOption.Contains(answer) ? "Correct" : "Incorrect";
+                    await SendMessage(webSocket, feedback);
+                }
+            }
+            else if (message.StartsWith("START:"))
+            {
+                var qcmId = int.Parse(message.Substring(6));
+                await StartQCM(qcmId, qcm);
+            }
+            else if (message == "PAUSE")
+            {
+                qcm.IsRunning = false;
+            }
+        }
+
+        private async Task StartQCM(int qcmId, CurrentQCM qcm)
+        {
+            var qcmDto = await _qcmService.GetQCMByIdAsync(qcmId);
+            if (qcmDto == null)
+            {
+                Console.WriteLine("QCM not found.");
                 return;
             }
 
-            isQCMRunning = false;
-            await Clients.All.SendAsync("QcmPaused");
+            qcm.Title = qcmDto.Title;
+            qcm.Questions = qcmDto.Questions;
+            qcm.Students = qcmDto.Students;
+
+            qcm.IsRunning = true;
+            qcm.CurrentQuestionIndex = 0;
+            await RunQCM(qcm);
         }
 
-        public async Task ResumeQCM()
+        private async Task RunQCM(CurrentQCM qcm)
         {
-            if (Context.ConnectionId != professorConnectionId)
+            while (qcm.CurrentQuestionIndex < qcm.Questions.Count && qcm.IsRunning)
             {
-                await Clients.Caller.SendAsync("Error", "Only the professor can resume the QCM.");
-                return;
+                var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                var questionMessage = $"{question.Id}|{question.Text}|{string.Join(",", question.Options)}";
+
+                // Broadcast the question to all students and professor
+                await BroadcastMessage(qcm, questionMessage);
+
+                await Task.Delay(20000); // Wait 20 seconds for answers
+
+                await SendRanking(qcm);
+
+                await Task.Delay(10000); // Wait 10 seconds to display the ranking
+
+                qcm.CurrentQuestionIndex++;
             }
 
-            isQCMRunning = true;
-            await Clients.All.SendAsync("QcmResumed");
-            await RunQCM();
+            qcm.IsRunning = false;
+        }
+
+        private async Task SendRanking(CurrentQCM qcm)
+        {
+            qcm.Students.Sort((x, y) => y.Score.CompareTo(x.Score));
+            var rankingMessage = "Ranking:\n";
+            foreach (var student in qcm.Students)
+            {
+                rankingMessage += $"{student.Name}: {student.Score} points\n";
+            }
+
+            await BroadcastMessage(qcm, rankingMessage);
+        }
+
+        private async Task BroadcastMessage(CurrentQCM qcm, string message)
+        {
+            var messageBytes = Encoding.UTF8.GetBytes(message);
+            foreach (var student in qcm.Students)
+            {
+                var studentWebSocket = student.webSocket;
+                if (studentWebSocket != null && studentWebSocket.State == WebSocketState.Open)
+                {
+                    await studentWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+            }
+        }
+
+        private async Task SendMessage(WebSocket webSocket, string message)
+        {
+            var messageBytes = Encoding.UTF8.GetBytes(message);
+            await webSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+    }
+
+    public class CurrentQCM
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public List<QuestionDto> Questions { get; set; }
+        public List<StudentQcm> Students { get; set; }
+        public bool IsRunning { get; set; }
+        public int CurrentQuestionIndex { get; set; }
+
+        public CurrentQCM()
+        {
+            Students = new List<StudentQcm>();
         }
     }
 }

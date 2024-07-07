@@ -1,11 +1,14 @@
-﻿namespace API_GesSIgn.Models.Response
+﻿using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
+
+namespace API_GesSIgn.Models.Response
 {
     public class QCMDto
     {
         public int Id { get; set; }
         public string Title { get; set; }
         public List<QuestionDto> Questions { get; set; }
-        public List<StudentQcm> Students { get; set; } 
+        public List<StudentQcm> Students { get; set; }
 
 
         public QCMDto()
@@ -27,13 +30,20 @@
         public string Name { get; set; }
         public int Score { get; set; }
 
+        public WebSocket webSocket { get; set; }
+
         public static StudentQcm FromStudent(Student student)
         {
-            StudentQcm res = new StudentQcm();
-            res.Student_Id = student.Student_Id.ToString();
-            res.Name = student.Student_User.User_firstname + " " + student.Student_User.User_lastname;
+            StudentQcm res = new StudentQcm(student.Student_Id.ToString(), student.Student_User.User_firstname + " " + student.Student_User.User_lastname);
             res.Score = 0;
             return res;
+        }
+
+        public StudentQcm(string Student_Id, string name)
+        {
+            this.Student_Id = Student_Id;
+            this.Name = name;
+            webSocket = null;
         }
     }
 
