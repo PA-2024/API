@@ -193,8 +193,10 @@ namespace API_GesSIgn.Services
                 var question = qcm.Questions[qcm.CurrentQuestionIndex];
                 if (question != null)
                 {
-                    bool isCorrect = answers.All(answer => question.CorrectOption.Contains(answer))
-                                     && question.CorrectOption.Count == answers.Length;
+                    var correctAnswers = new HashSet<int>(question.CorrectOption);
+                    var studentAnswers = new HashSet<int>(answers);
+
+                    bool isCorrect = correctAnswers.SetEquals(studentAnswers);
 
                     if (isCorrect)
                     {
