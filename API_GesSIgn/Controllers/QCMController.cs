@@ -6,6 +6,7 @@ using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static System.Collections.Specialized.BitVector32;
 
 namespace API_GesSIgn.Controllers
@@ -103,7 +104,7 @@ namespace API_GesSIgn.Controllers
             }
 
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
-            var userIdClaim = User.FindFirst("UserId")?.Value;
+            var userId  = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             if (string.IsNullOrEmpty(schoolIdClaim))
             {
                 return BadRequest("School ID not found in token.");
@@ -116,7 +117,7 @@ namespace API_GesSIgn.Controllers
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Where(q => q.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim)
-                && q.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_User.User_Id == Convert.ToInt32(userIdClaim) )
+                && q.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_User.User_Id == Convert.ToInt32(userId) )
                 .ToListAsync();
 
             List<QCMDto> qcmDtos = new List<QCMDto>();
@@ -145,7 +146,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("qcmByRange")]
-        [RoleRequirement(["Professeur", "Gestion Ecole"])]
+        [RoleRequirement(["Eleve"])]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmByrange([FromQuery] DateRangeRequest dateRange)
         {
             var tmp = await _context.QCMs
@@ -161,7 +162,9 @@ namespace API_GesSIgn.Controllers
 
             foreach (var qcm in tmp)
             {
-                QCMDto add = QcmToQcmDto(qcm).Result;
+                QCMDto add = new QCMDto();
+                add.Id = qcm.QCM_Id;
+                add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
                 qCMDtos.Add(add);
             }
 
