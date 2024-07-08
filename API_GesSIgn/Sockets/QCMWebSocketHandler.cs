@@ -167,6 +167,10 @@ namespace API_GesSIgn.Services
                 {
                     qcm.IsRunning = false;
                 }
+                else if (action == "PLAY")
+                {
+                    qcm.IsRunning = true;
+                }
                 _qcmSessions[session_qcmId] = qcm;
             }
         }
