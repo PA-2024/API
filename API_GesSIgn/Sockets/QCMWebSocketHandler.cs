@@ -290,13 +290,13 @@ namespace API_GesSIgn.Services
         }
 
         private async Task SendPeriodicMessage(CurrentQCM qcm, string message, int totalSeconds)
-        {
-            var messageObject = new { action = "INFO_TIMER", text = message };
-            var messageString = JsonConvert.SerializeObject(messageObject);
-            var messageBytes = Encoding.UTF8.GetBytes(messageString);
-
+        {           
             for (int i = 0; i < totalSeconds; i++)
             {
+                var messageObject = new { action = "INFO_TIMER", text = message, totaltime = "Total time : " + totalSeconds, passTime = totalSeconds };
+                var messageString = JsonConvert.SerializeObject(messageObject);
+                var messageBytes = Encoding.UTF8.GetBytes(messageString);
+
                 foreach (var student in qcm.Students)
                 {
                     var studentWebSocket = student.webSocket;
