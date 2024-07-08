@@ -162,13 +162,14 @@ namespace API_GesSIgn.Services
                 else if (action == "END")
                 {
                     qcm.IsRunning = false;
-                    // TODO AJOUTER SAUVEGARDE DES RESULTATS
-                    var startMessage = new { action = "END", message = "close connexion QCM" };
-                    await SendMessage(webSocket, startMessage);
-                    ///_qcmSessions[session_qcmId] = null;
+                    // TODO: AJOUTER SAUVEGARDE DES RESULTATS
 
-
+                    // Déconnecter tout le monde
+                    await CloseWebSocketConnections(qcm);
+                    _qcmSessions.TryRemove(qcm.Id, out _);
+                    Console.WriteLine($"QCM {qcm.Id} has ended and the session has been removed.");
                 }
+
                 _qcmSessions[session_qcmId] = qcm;
             }
         }
@@ -359,6 +360,29 @@ namespace API_GesSIgn.Services
                 Console.WriteLine("Sent student list to professor.");  // Log message
             }
         }
+
+        private async Task CloseWebSocketConnections(CurrentQCM qcm)
+        {
+            var closeMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { action = "END", message = "close connexion QCM" }));
+
+            foreach (var student in qcm.Students)
+            {
+                var studentWebSocket = student.webSocket;
+                if (studentWebSocket != null && studentWebSocket.State == WebSocketState.Open)
+                {
+                    await studentWebSocket.SendAsync(new ArraySegment<byte>(closeMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await studentWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "QCM ended", CancellationToken.None);
+                }
+            }
+
+            var professorWebSocket = qcm.Professor?.WebSocket;
+            if (professorWebSocket != null && professorWebSocket.State == WebSocketState.Open)
+            {
+                await professorWebSocket.SendAsync(new ArraySegment<byte>(closeMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+                await professorWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "QCM ended", CancellationToken.None);
+            }
+        }
+
     }
 
     public class CurrentQCM
