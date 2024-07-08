@@ -235,11 +235,11 @@ namespace API_GesSIgn.Services
                 await BroadcastMessage(qcm, questionMessage);
                 Console.WriteLine("Sent question to all clients.");  // Log message
 
-                await Task.Delay(20000); // Wait 20 seconds for answers
+                await SendPeriodicMessage(qcm, "Answer the question!", 20); // Wait 20 seconds for answers
 
-                await SendRanking(qcm);
-
+                await SendRanking(qcm); 
                 await Task.Delay(10000); // Wait 10 seconds to display the ranking
+                await SendPeriodicMessage(qcm, "Next question !", 3);
 
                 qcm.CurrentQuestionIndex++;
             }
@@ -286,6 +286,33 @@ namespace API_GesSIgn.Services
             {
                 await professorWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
                 Console.WriteLine("Sent message to professor.");  // Log message
+            }
+        }
+
+        private async Task SendPeriodicMessage(CurrentQCM qcm, string message, int totalSeconds)
+        {
+            var messageObject = new { action = "INFO_TIMER", text = message };
+            var messageString = JsonConvert.SerializeObject(messageObject);
+            var messageBytes = Encoding.UTF8.GetBytes(messageString);
+
+            for (int i = 0; i < totalSeconds; i++)
+            {
+                foreach (var student in qcm.Students)
+                {
+                    var studentWebSocket = student.webSocket;
+                    if (studentWebSocket != null && studentWebSocket.State == WebSocketState.Open)
+                    {
+                        await studentWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                    }
+                }
+
+                var professorWebSocket = qcm.Professor?.WebSocket;
+                if (professorWebSocket != null && professorWebSocket.State == WebSocketState.Open)
+                {
+                    await professorWebSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+
+                await Task.Delay(1000); // Wait for 1 second
             }
         }
 
