@@ -105,17 +105,16 @@ namespace API_GesSIgn.Services
                     else // Invalid token
                     {
                         var errorMessage = new { action = "ERROR", message = "Invalid token." };
-                        await SendMessage(webSocket, errorMessage); // Send error message to the professor
-                        Console.WriteLine(JsonConvert.SerializeObject(errorMessage));  // Log message
+                        await SendMessage(webSocket, errorMessage); 
+                        
                     }
                 }
                 else if (action == "JOIN_STUDENT")
                 {
-                    if (qcm.Professor == null)
+                    if (qcm.Professor == null) // pas de prof dans la room
                     {
                         var errorMessage = new { action = "ERROR", message = "Professor has not joined the QCM yet." };
-                        await SendMessage(webSocket, errorMessage); // Send error message to the student
-                        Console.WriteLine(JsonConvert.SerializeObject(errorMessage));  // Log message
+                        await SendMessage(webSocket, errorMessage); 
                         return;
                     }
 
@@ -145,22 +144,7 @@ namespace API_GesSIgn.Services
                 }
                 else if (action == "ANSWER")
                 {
-                    string studentId = parsedMessage.studentId;
-                    int answer = parsedMessage.answer;
-
-                    var student = qcm.Students.Find(s => s.Student_Id == studentId);
-                    if (student != null)
-                    {
-                        // Handle student answer
-                        var question = qcm.Questions[qcm.CurrentQuestionIndex];
-                        Console.WriteLine($"Corect reponse is : " + question.CorrectOption[0]);
-                        if (question != null && question.CorrectOption.Contains(answer))
-                        {
-                            student.Score += 10;
-                        }
-                        var feedback = new { result = question.CorrectOption.Contains(answer) ? "Correct" : "Incorrect" };
-                        await SendMessage(webSocket, feedback);
-                    }
+                    await CheckAnswer(webSocket, qcm, parsedMessage);
                 }
                 else if (action == "START")
                 {
@@ -186,6 +170,38 @@ namespace API_GesSIgn.Services
 
                 }
                 _qcmSessions[session_qcmId] = qcm;
+            }
+        }
+
+        /// <summary>
+        /// check la réponse de l'étudiant
+        /// </summary>
+        /// <param name="webSocket"></param>
+        /// <param name="qcm"></param>
+        /// <param name="parsedMessage"></param>
+        /// <returns></returns>
+        private async Task CheckAnswer(WebSocket webSocket, CurrentQCM qcm, dynamic parsedMessage)
+        {
+            string studentId = parsedMessage.studentId;
+            int[] answers = parsedMessage.answer.ToObject<int[]>();
+
+            var student = qcm.Students.Find(s => s.Student_Id == studentId);
+            if (student != null)
+            {
+                // Handle student answer
+                var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                if (question != null)
+                {
+                    bool isCorrect = answers.All(answer => question.CorrectOption.Contains(answer))
+                                     && question.CorrectOption.Count == answers.Length;
+
+                    if (isCorrect)
+                    {
+                        student.Score += 10;
+                    }
+                    var feedback = new { result = isCorrect ? "Correct" : "Incorrect" };
+                    await SendMessage(webSocket, feedback);
+                }
             }
         }
 
