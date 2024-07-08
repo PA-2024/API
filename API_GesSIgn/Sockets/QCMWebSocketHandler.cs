@@ -171,6 +171,11 @@ namespace API_GesSIgn.Services
                 {
                     qcm.IsRunning = true;
                 }
+                else if (action == "END")
+                {
+                    qcm.IsRunning = false;
+                    // TODO AJOUTER SAUVEGARDE DES RESULTATS
+                }
                 _qcmSessions[session_qcmId] = qcm;
             }
         }
