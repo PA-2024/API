@@ -5,7 +5,7 @@
     /// </summary>
     public class CreateQCMRequest
     {
-        public string Text { get; set; }
+        public string Title { get; set; }
 
         public int SubjectHour_id { get; set; } 
 

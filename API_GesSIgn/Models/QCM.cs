@@ -15,6 +15,7 @@ namespace API_GesSIgn.Models
         [Key]
         public int QCM_Id { get; set;}
 
+        public string QCM_Title { get; set; }
 
         /// <summary>
         /// Si true, impossible de relancer le QCM

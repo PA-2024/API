@@ -164,7 +164,8 @@ namespace API_GesSIgn.Controllers
             {
                 QCMDto add = new QCMDto();
                 add.Id = qcm.QCM_Id;
-                add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+                add.Description = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+                add.Title = qcm.QCM_Title;
                 qCMDtos.Add(add);
             }
 
@@ -210,7 +211,8 @@ namespace API_GesSIgn.Controllers
             }
             add.Questions = questionDtos;
             add.Id = qcm.QCM_Id;
-            add.Title = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+            add.Description = "QCM " + qcm.QCM_SubjectHour.SubjectsHour_Subjects.Subjects_Name;
+            add.Title = qcm.QCM_Title;
             return add;
         }
 
@@ -231,6 +233,7 @@ namespace API_GesSIgn.Controllers
             QCMDto old = await QcmToQcmDto(qcm);
             var add = new QCM();
             add.QCM_SubjectHour_id = SubjectsHour_id;
+            add.QCM_Title = "New " + old.Title;
             
             var newQcm = _context.QCMs.Add(add);
             await _context.SaveChangesAsync();
@@ -310,6 +313,7 @@ namespace API_GesSIgn.Controllers
                 return NotFound("SubjectHour not found");
             }
             qcm.QCM_SubjectHour = subjectHour;
+            qcm.QCM_Title = createQCM.Title;
             var newQcm = _context.Add(qcm);
             await _context.SaveChangesAsync();
             if (createQCM != null)

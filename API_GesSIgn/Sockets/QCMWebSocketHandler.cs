@@ -127,6 +127,8 @@ namespace API_GesSIgn.Services
                     {
                         findStudent.webSocket = webSocket;
                         Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Id}");
+                        var startMessage = new { action = "CONNECT", message = "reconnected to QCM" };
+                        await SendMessage(webSocket, startMessage);
                     }
                     else
                     {
@@ -134,6 +136,8 @@ namespace API_GesSIgn.Services
                         student.webSocket = webSocket; // Assign the WebSocket to the student
                         qcm.Students.Add(student);
                         Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
+                        var startMessage = new { action = "CONNECT", message = "joined QCM" };
+                        await SendMessage(webSocket, startMessage);
                     }
 
                     // Notify the professor
@@ -175,6 +179,11 @@ namespace API_GesSIgn.Services
                 {
                     qcm.IsRunning = false;
                     // TODO AJOUTER SAUVEGARDE DES RESULTATS
+                    var startMessage = new { action = "END", message = "close connexion QCM" };
+                    await SendMessage(webSocket, startMessage);
+                    ///_qcmSessions[session_qcmId] = null;
+
+
                 }
                 _qcmSessions[session_qcmId] = qcm;
             }
