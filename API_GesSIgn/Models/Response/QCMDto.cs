@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using Microsoft.Identity.Client;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 
 namespace API_GesSIgn.Models.Response
@@ -17,6 +18,8 @@ namespace API_GesSIgn.Models.Response
         public string Name { get; set; }
         public int Score { get; set; }
 
+        public string url_image { get; set; }
+
         public WebSocket webSocket { get; set; }
 
         public static StudentQcm FromStudent(Student student)
@@ -30,6 +33,7 @@ namespace API_GesSIgn.Models.Response
         {
             this.Student_Id = Student_Id;
             this.Name = name;
+            url_image = "https://res.cloudinary.com/htpfwx3jv/image/upload/v1720433819/URL/gkmekbqmgfuyrotrqrld.webp";
             webSocket = null;
         }
     }

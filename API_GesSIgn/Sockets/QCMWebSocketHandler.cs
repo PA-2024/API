@@ -214,8 +214,13 @@ namespace API_GesSIgn.Services
             while (qcm.CurrentQuestionIndex < qcm.Questions.Count && qcm.IsRunning)
             {
                 var question = qcm.Questions[qcm.CurrentQuestionIndex];
-                var listOption = question.Options.Select(s => new { id = s.Id, Text = s.Text }).ToList();
-                var questionMessage = new { action = "QUESTION", id = question.Id, text = question.Text, options = question.Options };
+                var questionMessage = new
+                {
+                    action = "QUESTION",
+                    id = question.Id,
+                    text = question.Text,
+                    options = question.Options.Select(o => new { id = o.Id, text = o.Text }).ToList()
+                };
 
                 // Broadcast the question to all students and professor
                 await BroadcastMessage(qcm, questionMessage);
@@ -240,7 +245,7 @@ namespace API_GesSIgn.Services
             var rankingMessage = new
             {
                 action = "RANKING",
-                ranking = qcm.Students.Select(s => new { name = s.Name, score = s.Score }).ToList()
+                ranking = qcm.Students.Select(s => new { name = s.Name, score = s.Score, url = s.url_image }).ToList()
             };
 
             await BroadcastMessage(qcm, rankingMessage);
@@ -287,7 +292,7 @@ namespace API_GesSIgn.Services
         {
             if (qcm.Professor != null && qcm.Professor.WebSocket.State == WebSocketState.Open)
             {
-                var students = qcm.Students.Select(s => new { id = s.Student_Id, name = s.Name }).ToList();
+                var students = qcm.Students.Select(s => new { id = s.Student_Id, name = s.Name, url = s.url_image }).ToList();
                 var message = new { action = "STUDENT_LIST", students };
                 await SendMessage(qcm.Professor.WebSocket, message);
                 Console.WriteLine("Sent student list to professor.");  // Log message
