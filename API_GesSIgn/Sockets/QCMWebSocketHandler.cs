@@ -183,28 +183,40 @@ namespace API_GesSIgn.Services
         /// <returns></returns>
         private async Task CheckAnswer(WebSocket webSocket, CurrentQCM qcm, dynamic parsedMessage)
         {
-            string studentId = parsedMessage.studentId;
-            int[] answers = parsedMessage.answer.ToObject<int[]>();
-
-            var student = qcm.Students.Find(s => s.Student_Id == studentId);
-            if (student != null)
+            try
             {
-                // Handle student answer
-                var question = qcm.Questions[qcm.CurrentQuestionIndex];
-                if (question != null)
+                string studentId = parsedMessage.studentId;
+                int[] answers = parsedMessage.answer.ToObject<int[]>();
+
+                var student = qcm.Students.Find(s => s.Student_Id == studentId);
+                if (student != null)
                 {
-                    var correctAnswers = new HashSet<int>(question.CorrectOption);
-                    var studentAnswers = new HashSet<int>(answers);
-
-                    bool isCorrect = correctAnswers.SetEquals(studentAnswers);
-
-                    if (isCorrect)
+                    // Handle student answer
+                    var question = qcm.Questions[qcm.CurrentQuestionIndex];
+                    if (question != null)
                     {
-                        student.Score += 10;
+                        var correctAnswers = new HashSet<int>(question.CorrectOption);
+                        var studentAnswers = new HashSet<int>(answers);
+
+                        bool isCorrect = correctAnswers.SetEquals(studentAnswers);
+
+                        if (isCorrect)
+                        {
+                            student.Score += 10;
+                        }
+                        var feedback = new { result = isCorrect ? "Correct" : "Incorrect" };
+                        await SendMessage(webSocket, feedback);
                     }
-                    var feedback = new { result = isCorrect ? "Correct" : "Incorrect" };
-                    await SendMessage(webSocket, feedback);
                 }
+            }
+            catch (Exception e)
+            {
+                var questionMessage = new
+                {
+                    action = "ERROR",
+                    message = "Error while checking the answer."
+                };
+                await BroadcastMessage(qcm, questionMessage);
             }
         }
 
