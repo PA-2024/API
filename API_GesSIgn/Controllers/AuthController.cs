@@ -106,5 +106,49 @@ namespace API_GesSIgn.Controllers
             return Ok(new { Token = "Bearer "  + tokenString });
 
         }
+
+        /// <summary>
+        /// Méthode pour la connexion des utilisateurs (Login)
+        /// </summary>
+        /// <param name="login"></param>
+        /// <returns></returns>
+        [HttpPost("student/login")]
+        public IActionResult StudentLogin([FromBody] LoginRequest login)
+        {
+            var user = _context.Users
+                .Include(u => u.User_Role)
+                .Include(u => u.User_School)
+                .SingleOrDefault(u => u.User_email == login.User_email && u.User_password == login.User_password 
+                && u.User_Role.Role_Name == "Eleve");
+
+            if (user == null)
+                return Unauthorized();
+
+            var student = _context.Students
+                .FirstOrDefault(s => s.Student_User.User_Id == user.User_Id);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
+                    new Claim(ClaimTypes.Role, user.User_Role.Role_Name),
+                    new Claim("SchoolName", user.User_School?.School_Name ?? string.Empty),
+                    new Claim("SchoolId", user.User_School?.School_Id.ToString() ?? string.Empty),
+                    new Claim("Student_Id", student.Student_Id.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return Ok(new { Token = "Bearer " + tokenString });
+
+        }
     }
 }
