@@ -293,7 +293,7 @@ namespace API_GesSIgn.Services
         {           
             for (int i = 0; i < totalSeconds; i++)
             {
-                var messageObject = new { action = "INFO_TIMER", text = message, totaltime = totalSeconds, passTime = i };
+                var messageObject = new { action = "INFO_TIMER", text = message, totaltime = totalSeconds, passTime = totalSeconds - i };
                 var messageString = JsonConvert.SerializeObject(messageObject);
                 var messageBytes = Encoding.UTF8.GetBytes(messageString);
 
