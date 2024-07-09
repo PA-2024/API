@@ -12,6 +12,7 @@ namespace API_GesSIgn.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [RoleRequirement("Admin")]
     public class AdminController : Controller
     {
         private readonly MonDbContext _context;
@@ -82,7 +83,24 @@ namespace API_GesSIgn.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<User>> PathAdminSchool(int id, UserRequest userRequest)
         {
-            return Ok("Update éffectué");
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.User_Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            if (userRequest.User_email != userRequest.User_email)
+                user.User_email = userRequest.User_email;
+            if (userRequest.User_num != userRequest.User_num)
+                user.User_num = userRequest.User_num;
+            if (userRequest.User_firstname != userRequest.User_firstname)
+                user.User_firstname = userRequest.User_firstname;
+            if (userRequest.User_lastname != userRequest.User_lastname)
+                user.User_lastname = userRequest.User_lastname;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(user);
         }
 
     }
