@@ -114,6 +114,30 @@ namespace Controllers
             return Ok("Supréssion réussi.");
         }
 
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<User>> PathTeacher(int id, UserRequest userRequest)
+        {
+            var user = await _context.Users.Include(u => u.User_Role)
+                    .Include(u => u.User_School).FirstOrDefaultAsync(m => m.User_Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            if (userRequest.User_email != userRequest.User_email)
+                user.User_email = userRequest.User_email;
+            if (userRequest.User_num != userRequest.User_num)
+                user.User_num = userRequest.User_num;
+            if (userRequest.User_firstname != userRequest.User_firstname)
+                user.User_firstname = userRequest.User_firstname;
+            if (userRequest.User_lastname != userRequest.User_lastname)
+                user.User_lastname = userRequest.User_lastname;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(user);
+        }
+
 
     }
 

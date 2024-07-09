@@ -83,7 +83,8 @@ namespace API_GesSIgn.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<User>> PathAdminSchool(int id, UserRequest userRequest)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(m => m.User_Id == id);
+            var user = await _context.Users.Include(u => u.User_Role)
+                    .Include(u => u.User_School).FirstOrDefaultAsync(m => m.User_Id == id);
             if (user == null)
             {
                 return NotFound();
