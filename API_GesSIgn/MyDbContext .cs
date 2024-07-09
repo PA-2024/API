@@ -37,6 +37,7 @@ public class MonDbContext : DbContext
     public DbSet<Question> Questions { get; set; }
     public DbSet<OptionQcm> OptionQcm { get; set; }
     public DbSet<QcmResult> QcmResult { get; set; }
+    public DbSet<AnswerQCM> AnswerQCM { get; set; }
     public DbSet<Student> Students { get; set; }
     public DbSet<Subjects> Subjects { get; set; }
     public DbSet<SubjectsHour> SubjectsHour { get; set; }
@@ -148,6 +149,17 @@ public class MonDbContext : DbContext
             .HasOne(qr => qr.QcmResult_Student)
             .WithMany()
             .HasForeignKey(qr => qr.QcmResult_Student_Id);
+
+        modelBuilder.Entity<AnswerQCM>()
+            .HasOne(qr => qr.AnswerQCM_QCM)
+            .WithMany()
+            .HasForeignKey(qr => qr.AnswerQCM_QCM_Id);
+
+        modelBuilder.Entity<AnswerQCM>()
+            .HasOne(qr => qr.AnswerQCM_Question)
+            .WithMany()
+            .HasForeignKey(qr => qr.AnswerQCM_Question_Id);
+
 
 
     }
