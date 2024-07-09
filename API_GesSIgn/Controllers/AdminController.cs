@@ -32,7 +32,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPost("CreateAdmin")]
-        public async Task<IActionResult> CreateAdminSchool(UserRequest userRequest)
+        public async Task<ActionResult<User>> CreateAdminSchool(UserRequest userRequest)
         {
             User user = new User();
             user.User_email = userRequest.User_email;
@@ -64,14 +64,14 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAdminSchool(int id)
+        public async Task<ActionResult<User>> DeleteAdminSchool(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(m => m.User_Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            _context.Users.Remove(role);
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
 
@@ -79,7 +79,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAdminSchool(int id)
+        public async Task<ActionResult<User>>> GetAdminSchool(int id)
         {
             var users = await _context.Users
                     .Include(u => u.User_Role)
@@ -90,7 +90,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> PathAdminSchool(int id, UserRequest userRequest)
+        public async Task<ActionResult<User>> PathAdminSchool(int id, UserRequest userRequest)
         {
             return Ok("Update éffectué");
         }
