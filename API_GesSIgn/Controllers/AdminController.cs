@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -8,6 +8,15 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using API_GesSIgn.Models.Response;
+using API_GesSIgn.Helpers;
+using API_GesSIgn.Models.Request;
+using API_GesSIgn.Models.Response;
+using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using static System.Collections.Specialized.BitVector32;
 
 namespace API_GesSIgn.Controllers
 {
