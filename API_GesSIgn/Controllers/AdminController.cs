@@ -57,7 +57,7 @@ namespace API_GesSIgn.Controllers
             user.User_School = school;
             user.User_Role = role;
 
-            _context.Users.Add(role);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return Ok("User Gestion Ecole ajouté");
 
