@@ -70,7 +70,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAdminSchool(int id, )
+        public async Task<ActionResult<IEnumerable<User>>> GetAdminSchool(int id)
         {
             var users = await _context.Users
                     .Include(u => u.User_Role)
