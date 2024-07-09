@@ -66,7 +66,7 @@ namespace API_GesSIgn.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAdminSchool(int id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _context.Users.FirstOrDefaultAsync(m => m.User_Id == id);
             if (user == null)
             {
                 return NotFound();
