@@ -98,24 +98,36 @@ namespace API_GesSIgn.Sockets
             }
             else if (parts.Length == 3 && parts[0] == "validate")
             {
-                int subjectHourId = int.Parse(parts[1]);
-                int studentId = int.Parse(parts[2]);
-
-                using (var scope = _serviceProvider.CreateScope())
+                try 
                 {
-                    var context = scope.ServiceProvider.GetRequiredService<MonDbContext>();
-
-                    var presence = context.Presences
-                        .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
-
-                    if (presence != null)
+                    int subjectHourId = int.Parse(parts[1]);
+                    int studentId = int.Parse(parts[2]);
+    
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        presence.Presence_Is = true;
-                        presence.Presence_ScanDate = DateTime.UtcNow;
-                        presence.Presence_ScanInfo = message;
-                        context.Presences.Update(presence);
-                        await context.SaveChangesAsync();
+                        var context = scope.ServiceProvider.GetRequiredService<MonDbContext>();
+    
+                        var presence = context.Presences
+                            .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
+    
+                        if (presence != null)
+                        {
+                            presence.Presence_Is = true;
+                            presence.Presence_ScanDate = DateTime.UtcNow;
+                            presence.Presence_ScanInfo = message;
+                            context.Presences.Update(presence);
+                            await context.SaveChangesAsync();
+                            wait SendMessage(webSocket, "Invalid token or subjectHourId.");
+                        }
+                        else 
+                        {
+                            wait SendMessage(webSocket, "ERROR, please contact support");
+                        }
                     }
+                }
+                catch (Exception e) 
+                {
+                    Console.WriteLine("ERROR"); // TODO A CHANGER 
                 }
             }
         }
