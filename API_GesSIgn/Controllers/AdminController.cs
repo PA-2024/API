@@ -70,7 +70,18 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<User>> GetAdminSchool(int id)
+        public async Task<ActionResult<User>> GetAdminSchool()
+        {
+            var users = await _context.Users
+                    .Include(u => u.User_Role)
+                    .Include(u => u.User_School)
+                    .Where(u => u.User_Role.Role_Name == "Gestion Ecole")
+                    .ToListAsync();
+            return Ok(users);
+        }
+
+        [HttpGet("One/{id}")]
+        public async Task<ActionResult<User>> GetOneAdminSchool(int id)
         {
             var users = await _context.Users
                     .Include(u => u.User_Role)
@@ -79,6 +90,7 @@ namespace API_GesSIgn.Controllers
                     .ToListAsync();
             return Ok(users);
         }
+
 
         [HttpPatch("{id}")]
         public async Task<ActionResult<User>> PathAdminSchool(int id, UserRequest userRequest)
