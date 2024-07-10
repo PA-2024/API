@@ -163,9 +163,10 @@ public class MonDbContext : DbContext
             .HasForeignKey(qr => qr.AnswerQCM_Question_Id);
 
         modelBuilder.Entity<Presence>()
-            .HasOne(p => p.Presence_ProofAbsence)
-            .WithMany()
-            .HasForeignKey(qr => qr.Presence_ProofAbsence_Id);
+           .HasOne(p => p.Presence_ProofAbsence)
+           .WithMany()
+           .HasForeignKey(p => p.Presence_ProofAbsence_Id)
+           .OnDelete(DeleteBehavior.SetNull);
 
 
 
