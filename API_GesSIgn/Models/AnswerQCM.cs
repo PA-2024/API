@@ -23,5 +23,12 @@ namespace API_GesSIgn.Models
         /// listes des réponses possibles sous forme de string (séparées par des virgules)
         /// </summary>
         public string AnswerQCM_Answer { get; set; }
+
+
+        public int AnswerQCM_Student_id { get; set; }
+
+        [ForeignKey("AnswerQCM_Student_id")]
+        public Student AnswerQCM_Student { get; set; }
+    
     }
 }

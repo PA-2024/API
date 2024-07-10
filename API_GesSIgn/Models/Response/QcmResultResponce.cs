@@ -4,13 +4,13 @@ namespace API_GesSIgn.Models.Response
 {
     public class QcmResultResponce { 
 
-        public int QcmResult_id { get; set; }
+        public int QcmResult_Id { get; set; }
 
-        public string QcmResult_tile { get; set; }
+        public string QcmResult_Title { get; set; }
 
         public StudentSimplifyDto QcmResult_Student { get; set; }
 
-        public int QcmResult_score { get; set; }
+        public int QcmResult_Score { get; set; }
 
 
 
