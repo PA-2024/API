@@ -117,11 +117,11 @@ namespace API_GesSIgn.Sockets
                             presence.Presence_ScanInfo = message;
                             context.Presences.Update(presence);
                             await context.SaveChangesAsync();
-                            wait SendMessage(webSocket, "Invalid token or subjectHourId.");
+                            await SendMessage(webSocket, "Invalid token or subjectHourId.");
                         }
                         else 
                         {
-                            wait SendMessage(webSocket, "ERROR, please contact support");
+                            await SendMessage(webSocket, "ERROR, please contact support");
                         }
                     }
                 }
