@@ -35,6 +35,12 @@ namespace API_GesSIgn.Models
 
         [ForeignKey("Presence_SubjectsHour_Id")]
         public SubjectsHour Presence_SubjectsHour { get; set; }
+
+        public int Presence_ProofAbsence_Id { get; set; }
+
+        [ForeignKey("Presence_ProofAbsence_Id")]
+        public ProofAbsence Presence_ProofAbsence { get; set; }
+
         
         [DefaultValue(false)]
         public bool Presence_Is { get; set; }

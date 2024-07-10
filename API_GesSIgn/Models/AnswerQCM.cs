@@ -17,7 +17,7 @@ namespace API_GesSIgn.Models
         public int AnswerQCM_Question_Id { get; set; }
 
         [ForeignKey("AnswerQCM_Question_Id")]
-        public string AnswerQCM_Question { get; set; }
+        public Question AnswerQCM_Question { get; set; }
 
         /// <summary>
         /// listes des réponses possibles sous forme de string (séparées par des virgules)

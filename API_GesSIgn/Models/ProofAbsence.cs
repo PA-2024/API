@@ -19,6 +19,8 @@ namespace API_GesSIgn.Models
         /// </summary>
         public int ProofAbsence_Status { get; set; }
 
-        public string ProofAbsence_Commentaire { get; set; }
+        public string ProofAbsence_SchoolCommentaire { get; set; }
+
+        public string ProofAbsence_ReasonAbscence { get; set; }
     }
 }

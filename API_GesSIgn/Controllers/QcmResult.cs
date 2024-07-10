@@ -57,7 +57,7 @@ namespace API_GesSIgn.Controllers
                 var qcmResult = new QcmResultDetails
                 {
                     QcmResult_Student = StudentSimplifyDto.FromStudent(q.AnswerQCM_Student),
-                    QcmResultDetails_Answer = q.AnswerQCM_Question,
+                    QcmResultDetails_Answer = q.AnswerQCM_Answer,
                     QcmResultDetails_Question_id = q.AnswerQCM_Question_Id
                 };
 

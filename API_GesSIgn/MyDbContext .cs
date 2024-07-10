@@ -32,6 +32,8 @@ public class MonDbContext : DbContext
     public DbSet<Error> Errors { get; set; }
     public DbSet<Building> Buildings { get; set; }
     public DbSet<Presence> Presences { get; set; }
+
+    public DbSet<ProofAbsence> ProofAbsences { get; set; }
     public DbSet<QCM> QCMs { get; set; }
 
     public DbSet<Question> Questions { get; set; }
@@ -159,6 +161,11 @@ public class MonDbContext : DbContext
             .HasOne(qr => qr.AnswerQCM_Question)
             .WithMany()
             .HasForeignKey(qr => qr.AnswerQCM_Question_Id);
+
+        modelBuilder.Entity<Presence>()
+            .HasOne(p => p.Presence_ProofAbsence)
+            .WithMany()
+            .HasForeignKey(qr => qr.Presence_ProofAbsence_Id);
 
 
 

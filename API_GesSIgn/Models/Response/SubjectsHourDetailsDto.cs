@@ -1,4 +1,5 @@
 ﻿using NuGet.Protocol.Plugins;
+using System.ComponentModel.DataAnnotations;
 
 namespace API_GesSIgn.Models.Response
 {
@@ -66,7 +67,12 @@ namespace API_GesSIgn.Models.Response
 
         public DateTime SubjectsHour_DateEnd { get; set; }  
 
-        public SubjectsdDto SubjectsHour_Subject { get; set; }
+        public required SubjectsdDto SubjectsHour_Subject { get; set; }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public ProofAbsenceResponse? proofAbsence { get; set; }
 
         public bool StudentIsPresent { get; set; }
 
@@ -84,6 +90,47 @@ namespace API_GesSIgn.Models.Response
     }
 
 
+    public class ProofAbsenceResponse
+    {
+        public int ProofAbsence_Id { get; set; }
+
+        public string ProofAbsence_UrlFile { get; set; }
+
+        /// <summary>
+        /// 1 -> Refusé
+        /// 2 -> accepté
+        /// 3 -> en attente de traitement
+        /// </summary>
+        public string ProofAbsence_Status { get; set; }
+
+        public string ProofAbsence_SchoolCommentaire { get; set; }
+
+        public string ProofAbsence_ReasonAbscence { get; set; }
+
+        public static ProofAbsenceResponse FromProofAbsence(ProofAbsence proofAbsence)
+        {
+            ProofAbsenceResponse res = new ProofAbsenceResponse();
+            res.ProofAbsence_Id = proofAbsence.ProofAbsence_Id;
+            res.ProofAbsence_UrlFile = proofAbsence.ProofAbsence_UrlFile;
+            if (proofAbsence.ProofAbsence_Status == 1)
+            {
+                res.ProofAbsence_Status = "Refusé";
+            }
+            else if (proofAbsence.ProofAbsence_Status == 2)
+            {
+                res.ProofAbsence_Status = "Accepté";
+            }
+            else
+            {
+                res.ProofAbsence_Status = "En attente de traitement";
+            }
+            res.ProofAbsence_SchoolCommentaire = proofAbsence.ProofAbsence_SchoolCommentaire;
+            res.ProofAbsence_ReasonAbscence = proofAbsence.ProofAbsence_ReasonAbscence;
+            return res;
+        }
+
+    }
+
     /// <summary>
     /// SubjectsHour avec l'information des élèves sur leur presence
     /// </summary>
@@ -97,5 +144,6 @@ namespace API_GesSIgn.Models.Response
         public SubjectsdDto Subject { get; set; }
         public List<StudentIsPresent> Students { get; set; }
     }
-    
+
+
 }
