@@ -17,6 +17,7 @@ namespace API_GesSIgn.Controllers
             _context = context;
         }
 
+        [HttpGet("AllResultsQcmForOneQcm/{id}")]
         public async Task<ActionResult<IEnumerable<QcmResultResponce>>> AllResultsQcmForOneQcm(int id)
         {
             var qcm = await _context.QcmResult
@@ -44,6 +45,7 @@ namespace API_GesSIgn.Controllers
         /// </summary>
         /// <param name="id">id du qcm</param>
         /// <returns></returns>
+        [HttpGet("AllResultsQcmForOneQcmDetails/{id}")]
         public async Task<ActionResult<IEnumerable<QcmResultDetails>>> AllResultsQcmForOneQcmDetails(int id)
         {
             var qcm = await _context.AnswerQCM
