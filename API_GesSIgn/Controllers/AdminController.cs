@@ -75,7 +75,7 @@ namespace API_GesSIgn.Controllers
             var users = await _context.Users
                     .Include(u => u.User_Role)
                     .Include(u => u.User_School)
-                    .Where(u => u.User_Role.Role_Name == "Gestion Ecole")
+                    .Where(u => u.User_Role.Role_Name == "Gestion Ecole" && u.User_Id == id )
                     .ToListAsync();
             return Ok(users);
         }
