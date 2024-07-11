@@ -93,13 +93,23 @@ namespace API_GesSIgn.Controllers
                 .ThenInclude(s => s.SubjectsHour_Subjects)
                 .ThenInclude(s => s.Subjects_User) //teacher 
                 .Include(s => s.Presence_ProofAbsence)
-                //.Where(s => s. .ProofAbsence_SchoolId == int.Parse(schoolIdClaim))
+                .Include(s => s.Presence_Student)
+                .ThenInclude(s => s.Student_User)
+                .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim))
                 .ToListAsync();
 
+            List<ProofAbsenceDetailsResponse> proofAbsenceDetails = new List<ProofAbsenceDetailsResponse>();
+
+            foreach (var item in data)
+            {
+                ProofAbsenceDetailsResponse add = new ProofAbsenceDetailsResponse();
+                add.SubjectHour_DateStart = item.Presence_SubjectsHour.SubjectsHour_DateStart;
+                add.SubjectHour_DateEnd = item.Presence_SubjectsHour.SubjectsHour_DateEnd;
+                add.Subject_Name = item.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Name;
+            }
 
 
-            var allData = await _context.ProofAbsences.ToListAsync();
-            return Ok();
+            return Ok(proofAbsenceDetails);
         }
     }
 }
