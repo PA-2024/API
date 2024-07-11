@@ -27,8 +27,9 @@ namespace API_GesSIgn.Controllers
             _context.ProofAbsences.Add(proofAbsenceRequest);
             await _context.SaveChangesAsync();
 
-            presence.Presence_ProofAbsence = proofAbsenceRequest;
+            presence.Presence_ProofAbsence.ProofAbsence_Id = proofAbsenceRequest.ProofAbsence_Id;
             _context.Presences.Update(presence);
+
 
             await _context.SaveChangesAsync();
             
@@ -64,7 +65,7 @@ namespace API_GesSIgn.Controllers
                 {
                     return NotFound("Erreur dans le liste des présence");
                 }
-                presence.Presence_ProofAbsence = proofAbsence;
+                presence.Presence_ProofAbsence.ProofAbsence_Id = proofAbsenceRequest.ProofAbsence_Id;
                 _context.Presences.Update(presence);
 
                 await _context.SaveChangesAsync();

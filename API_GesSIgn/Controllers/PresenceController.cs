@@ -270,6 +270,24 @@ namespace API_GesSIgn.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpPatch("confirm/{id}")]
+        public async Task<IActionResult> CheckAbsence(int id)
+        {
+            var p = _context.Presences.FirstOrDefault(p => p.Presence_Id == id);
+            if (p == null)
+            {
+                return NotFound();
+            }
+            p.Presence_Is = true;
+            _context.Update(p);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
 
 
 
