@@ -27,6 +27,11 @@ public class StudentSubjectsController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        if (await _context.StudentSubjects.AnyAsync(ss => ss.StudentSubject_StudentId == request.Student_Id && ss.StudentSubject_SubjectId == request.Subject_Id))
+        {
+            return StatusCode(409);
+        }
+
         var studentSubject = new StudentSubject
         {
             StudentSubject_StudentId = request.Student_Id,
@@ -52,16 +57,26 @@ public class StudentSubjectsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var studentSubjects = request.StudentIds.Select(studentId => new StudentSubject
+        List<StudentSubject> studentSubjects = new List<StudentSubject>();
+        
+        foreach (var studentId in request.StudentIds)
         {
-            StudentSubject_StudentId = studentId,
-            StudentSubject_SubjectId = request.Subject_Id
-        }).ToList();
+            if (await _context.StudentSubjects.AnyAsync(ss => ss.StudentSubject_StudentId == studentId && ss.StudentSubject_SubjectId == request.Subject_Id))
+            {
+                return StatusCode(409);
+            }
+            StudentSubject add = new StudentSubject();
+            add.StudentSubject_StudentId = studentId;
+            add.StudentSubject_SubjectId = request.Subject_Id;
 
+            studentSubjects.Add(add);
+
+        }
         _context.StudentSubjects.AddRange(studentSubjects);
         await _context.SaveChangesAsync();
 
-        return Ok(studentSubjects);
+
+        return StatusCode(201);
     }
 
     /// <summary>
@@ -83,6 +98,6 @@ public class StudentSubjectsController : ControllerBase
         _context.StudentSubjects.Remove(existingStudentSubject);
         await _context.SaveChangesAsync();
 
-        return NoContent();
+        return StatusCode(204);
     }
 }

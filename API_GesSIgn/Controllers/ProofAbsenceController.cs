@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API_GesSIgn.Controllers
 {
-    public class ProofAbsenceController : ControllerBase 
+    public class ProofAbsenceController : ControllerBase
     {
         private readonly MonDbContext _context;
 
@@ -33,7 +33,7 @@ namespace API_GesSIgn.Controllers
 
 
             await _context.SaveChangesAsync();
-            
+
             return Ok("Justificatif d'absence ajouté");
         }
 
@@ -52,7 +52,7 @@ namespace API_GesSIgn.Controllers
             proofAbsence.ProofAbsence_Status = proofAbsenceRequest.ProofAbsence_Status;
 
             _context.ProofAbsences.Update(proofAbsence);
-           
+
             if (proofAbsenceRequest.Presence_id == null)
             {
                 return Ok("Justificatif d'absence modifié");
@@ -88,7 +88,14 @@ namespace API_GesSIgn.Controllers
                 return BadRequest("School ID not found in token.");
             }
 
-           
+            var data = await _context.Presences
+                .Include(s => s.Presence_SubjectsHour)
+                .ThenInclude(s => s.SubjectsHour_Subjects)
+                .ThenInclude(s => s.Subjects_User) //teacher 
+                .Include(s => s.Presence_ProofAbsence)
+                //.Where(s => s. .ProofAbsence_SchoolId == int.Parse(schoolIdClaim))
+                .ToListAsync();
+
 
 
             var allData = await _context.ProofAbsences.ToListAsync();
