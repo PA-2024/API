@@ -102,10 +102,11 @@ namespace API_GesSIgn.Controllers
 
             foreach (var item in data)
             {
-                ProofAbsenceDetailsResponse add = new ProofAbsenceDetailsResponse();
-                add.SubjectHour_DateStart = item.Presence_SubjectsHour.SubjectsHour_DateStart;
-                add.SubjectHour_DateEnd = item.Presence_SubjectsHour.SubjectsHour_DateEnd;
-                add.Subject_Name = item.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Name;
+                ProofAbsenceDetailsResponse add = ProofAbsenceDetailsResponse.FromProofAbsence(item,
+                    item.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Name, item.Presence_SubjectsHour.SubjectsHour_DateStart,
+                    item.Presence_SubjectsHour.SubjectsHour_DateEnd, item.Presence_Student
+                    );
+                proofAbsenceDetails.Add(add);
             }
 
 
