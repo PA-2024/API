@@ -11,7 +11,7 @@ namespace API_GesSIgn.Services
         Task<QCMDto> GetQCMByIdAsync(int id);
         Task<Student> GetStudentByIdAsync(int id);
         Task<QCM> GetQCMById(int id);
-        Task AddAnswer(HashSet<int> answer, Student student, int idqcm, int idquestion);
+        Task AddAnswer(HashSet<int> answer, int student_id, int idqcm, int idquestion);
     }
 
     public class QcmService : IQcmService
@@ -73,15 +73,22 @@ namespace API_GesSIgn.Services
         /// <param name="student"></param>
         /// <param name="idqcm"></param>
         /// <param name="idquestion"></param>
-        public async Task AddAnswer(HashSet<int> answer, Student student, int idqcm, int idquestion)
+        public async Task AddAnswer(HashSet<int> answer, int student_id, int idqcm, int idquestion)
         {
+            try { 
             AnswerQCM answerQCM = new AnswerQCM();
             answerQCM.AnswerQCM_Answer = string.Join(",", answer);
-            answerQCM.AnswerQCM_Student = student;
+            answerQCM.AnswerQCM_Student_id = student_id;
             answerQCM.AnswerQCM_QCM_Id = idqcm;
             answerQCM.AnswerQCM_Question_Id = idquestion;
             _context.AnswerQCM.Add(answerQCM);
             await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw e;
+            }
 
         }
     }

@@ -50,7 +50,7 @@ namespace API_GesSIgn.Services
             // Ensure the QCM session is created and added to the dictionary
             var qcm = _qcmSessions.GetOrAdd(qcmId, id => new CurrentQCM
             {
-                Id = id,
+                Room_id = id,
                 Questions = new List<QuestionDto>(),
                 Students = new List<StudentQcm>(),
                 Professor = null
@@ -94,12 +94,12 @@ namespace API_GesSIgn.Services
                         if (qcm.Professor != null)
                         {
                             qcm.Professor.WebSocket = webSocket;
-                            Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Id}");
+                            Console.WriteLine($"Professor {qcm.Professor.Name} reconnected to QCM {qcm.Room_id}");
                         }
                         else
                         {
                             qcm.Professor = new Professor(professorName, webSocket);
-                            Console.WriteLine($"Professor {professorName} joined QCM {qcm.Id}");
+                            Console.WriteLine($"Professor {professorName} joined QCM {qcm.Room_id}");
                         }
                     }
                     else // Invalid token
@@ -127,7 +127,7 @@ namespace API_GesSIgn.Services
                     if (findStudent != null)
                     {
                         findStudent.webSocket = webSocket;
-                        Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Id}");
+                        Console.WriteLine($"Student {findStudent.Name} (ID: {findStudent.Student_Id}) reconnected to QCM {qcm.Room_id}");
                         var startMessage = new { action = "CONNECT", message = "reconnected to QCM" };
                         await SendMessage(webSocket, startMessage);
                     }
@@ -138,7 +138,7 @@ namespace API_GesSIgn.Services
                         student.webSocket = webSocket; 
                         student.student = stud;
                         qcm.Students.Add(student);
-                        Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
+                        Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Room_id}");
                         var startMessage = new { action = "CONNECT", message = "joined QCM" };
                         await SendMessage(webSocket, startMessage);
                     }
@@ -170,8 +170,8 @@ namespace API_GesSIgn.Services
 
                     // Déconnecter tout le monde
                     await CloseWebSocketConnections(qcm);
-                    _qcmSessions.TryRemove(qcm.Id, out _);
-                    Console.WriteLine($"QCM {qcm.Id} has ended and the session has been removed.");
+                    _qcmSessions.TryRemove(qcm.Room_id, out _);
+                    Console.WriteLine($"QCM {qcm.Room_id} has ended and the session has been removed.");
                 }
 
                 _qcmSessions[session_qcmId] = qcm;
@@ -210,7 +210,7 @@ namespace API_GesSIgn.Services
                         }
                         var feedback = new { result = isCorrect ? "Correct" : "Incorrect" };
                         await SendMessage(webSocket, feedback);
-                        await qcmService.AddAnswer(studentAnswers, student.student, Convert.ToInt32(qcm.Id), qcm.CurrentQuestionIndex);
+                        await qcmService.AddAnswer(studentAnswers, student.student.Student_Id, Convert.ToInt32(qcm.QCm_id), question.Id);
                     }
                 }
             }
@@ -247,6 +247,7 @@ namespace API_GesSIgn.Services
             }
 
             qcm.Title = qcmDto.Title;
+            qcm.QCm_id = qcmDto.Id;
             qcm.Questions = qcmDto.Questions;
 
             qcm.IsRunning = true;
@@ -406,7 +407,10 @@ namespace API_GesSIgn.Services
 
     public class CurrentQCM
     {
-        public string Id { get; set; }
+        public string Room_id { get; set; }
+
+        public int QCm_id { get; set; }
+
         public string Title { get; set; }
         public List<QuestionDto> Questions { get; set; }
         public List<StudentQcm> Students { get; set; }
