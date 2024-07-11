@@ -76,18 +76,18 @@ namespace API_GesSIgn.Services
         public async Task AddAnswer(HashSet<int> answer, int student_id, int idqcm, int idquestion)
         {
             try { 
-            AnswerQCM answerQCM = new AnswerQCM();
-            answerQCM.AnswerQCM_Answer = string.Join(",", answer);
-            answerQCM.AnswerQCM_Student_id = student_id;
-            answerQCM.AnswerQCM_QCM_Id = idqcm;
-            answerQCM.AnswerQCM_Question_Id = idquestion;
-            _context.AnswerQCM.Add(answerQCM);
-            await _context.SaveChangesAsync();
+                AnswerQCM answerQCM = new AnswerQCM();
+                answerQCM.AnswerQCM_Answer = string.Join(",", answer);
+                answerQCM.AnswerQCM_Student_id = student_id;
+                answerQCM.AnswerQCM_QCM_Id = idqcm;
+                answerQCM.AnswerQCM_Question_Id = idquestion;
+                _context.AnswerQCM.Add(answerQCM);
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw e;
+                throw;
             }
 
         }

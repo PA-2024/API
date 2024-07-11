@@ -253,7 +253,9 @@ namespace API_GesSIgn.Controllers
                         User_firstname = ss.StudentSubject_Student.Student_User.User_firstname,
                         User_num = ss.StudentSubject_Student.Student_User.User_num
                     },
-                    IsPresent = _context.Presences.Any(p => p.Presence_Student_Id == ss.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id && p.Presence_Is)
+                    IsPresent = _context.Presences.Any(p => p.Presence_Student_Id == ss.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id && p.Presence_Is),
+                    Presence_id = _context.Presences.FirstOrDefault(p => p.Presence_Student_Id == ss.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id).Presence_Id 
+
                 })
                 .ToListAsync();
 
@@ -275,6 +277,7 @@ namespace API_GesSIgn.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPatch("confirm/{id}")]
+        [RoleRequirement("Professeur")]
         public async Task<IActionResult> CheckAbsence(int id)
         {
             var p = _context.Presences.FirstOrDefault(p => p.Presence_Id == id);
@@ -286,7 +289,7 @@ namespace API_GesSIgn.Controllers
             _context.Update(p);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return StatusCode(201, "Présence valié");
         }
 
 

@@ -1,5 +1,6 @@
 ﻿using API_GesSIgn.Models;
 using API_GesSIgn.Models.Request;
+using API_GesSIgn.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -71,6 +72,25 @@ namespace API_GesSIgn.Controllers
                 await _context.SaveChangesAsync();
             }
             return Ok("Justificatif d'absence modifié");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<ActionResult<IEnumerable<ProofAbsenceDetailsResponse>>> GetProofAbsence()
+        {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
+
+
+            var allData = await _context.ProofAbsences.ToListAsync();
+            return Ok();
         }
     }
 }

@@ -66,6 +66,8 @@ namespace API_GesSIgn.Models.Response
         public int Student_Id { get; set; }
         public UserSimplifyDto Student_User { get; set; }
         public bool IsPresent { get; set; }
+
+        public int Presence_id { get; set; }
     }
 
 }
