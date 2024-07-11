@@ -146,7 +146,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("qcmByRange")]
-        [RoleRequirement(["Eleve"])]
+        [RoleRequirement(["Eleve", "Professeur"])]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmByrange([FromQuery] DateRangeRequest dateRange)
         {
             var tmp = await _context.QCMs
