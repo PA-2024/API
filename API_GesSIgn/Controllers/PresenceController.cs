@@ -222,15 +222,13 @@ namespace API_GesSIgn.Controllers
 
 
 
-        // GET: api/Presences/SubjectsHour/5
         [RoleRequirement("Professeur")]
         [HttpGet("SubjectsHourWithPresences/{id}")]
         public async Task<ActionResult<SubjectsHourDetailsWithStudentsDto>> GetSubjectsHourWithStudents(int id)
         {
             var subjectsHour = await _context.SubjectsHour
-                .Include(sh => sh.SubjectsHour_Bulding)
                 .Include(sh => sh.SubjectsHour_Subjects)
-                    .ThenInclude(s => s.Subjects_User)
+                .ThenInclude(s => s.Subjects_User)
                 .FirstOrDefaultAsync(sh => sh.SubjectsHour_Id == id);
 
             if (subjectsHour == null)
@@ -241,23 +239,26 @@ namespace API_GesSIgn.Controllers
             var students = await _context.StudentSubjects
                 .Where(ss => ss.StudentSubject_SubjectId == subjectsHour.SubjectsHour_Subjects.Subjects_Id)
                 .Include(ss => ss.StudentSubject_Student)
-                    .ThenInclude(s => s.Student_User)
-                .Select(ss => new StudentIsPresent
-                {
-                    Student_Id = ss.StudentSubject_Student.Student_Id,
-                    Student_User = new UserSimplifyDto
-                    {
-                        User_Id = ss.StudentSubject_Student.Student_User.User_Id,
-                        User_email = ss.StudentSubject_Student.Student_User.User_email,
-                        User_lastname = ss.StudentSubject_Student.Student_User.User_lastname,
-                        User_firstname = ss.StudentSubject_Student.Student_User.User_firstname,
-                        User_num = ss.StudentSubject_Student.Student_User.User_num
-                    },
-                    IsPresent = _context.Presences.Any(p => p.Presence_Student_Id == ss.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id && p.Presence_Is),
-                    Presence_id = _context.Presences.FirstOrDefault(p => p.Presence_Student_Id == ss.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id).Presence_Id 
-
-                })
                 .ToListAsync();
+
+            List<StudentIsPresent> studentIsPresents = new List<StudentIsPresent>();
+            foreach (var student in students)
+            {
+                StudentIsPresent add = new StudentIsPresent();
+                var p = await  _context.Presences
+                    .Include(p => p.Presence_Student)
+                    .ThenInclude(p => p.Student_User)
+                    .Where(p => p.Presence_Student_Id == student.StudentSubject_Student.Student_Id && p.Presence_SubjectsHour_Id == id)
+                    .FirstOrDefaultAsync();
+                if (p == null)
+                {
+                    return StatusCode(500, "Error, Student no have a Presences");
+                }
+                add.Student_User = UserSimplifyDto.FromUser(p.Presence_Student.Student_User);
+                add.IsPresent = p.Presence_Is;
+                add.Presence_id = p.Presence_Id;
+                studentIsPresents.Add(add);
+            }   
 
             var result = new SubjectsHourDetailsWithStudentsDto
             {
@@ -266,7 +267,7 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
                 Subject = SubjectsdDto.FromSubjects(subjectsHour.SubjectsHour_Subjects),
-                Students = students
+                Students = studentIsPresents
             };
 
             return Ok(result);

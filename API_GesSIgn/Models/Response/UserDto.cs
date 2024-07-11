@@ -3,9 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace API_GesSIgn.Models.Response
 {
-    public class UserDto
-    {
-    }
 
     public class UserSimplifyDto
     {

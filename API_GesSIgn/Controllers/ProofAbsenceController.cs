@@ -79,6 +79,7 @@ namespace API_GesSIgn.Controllers
         /// </summary>
         /// <returns></returns>
         [RoleRequirement("Gestion Ecole")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<ProofAbsenceDetailsResponse>>> GetProofAbsence()
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
@@ -87,6 +88,7 @@ namespace API_GesSIgn.Controllers
                 return BadRequest("School ID not found in token.");
             }
 
+           
 
 
             var allData = await _context.ProofAbsences.ToListAsync();
