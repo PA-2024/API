@@ -23,14 +23,9 @@ namespace API_GesSIgn.Models.Response
 
         public string url_image { get; set; }
 
-        public WebSocket webSocket { get; set; }
+        public Student? student { get; set; }
 
-        public static StudentQcm FromStudent(Student student)
-        {
-            StudentQcm res = new StudentQcm(student.Student_Id.ToString(), student.Student_User.User_firstname + " " + student.Student_User.User_lastname);
-            res.Score = 0;
-            return res;
-        }
+        public WebSocket webSocket { get; set; }
 
         public StudentQcm(string Student_Id, string name)
         {

@@ -204,7 +204,7 @@ namespace API_GesSIgn.Controllers
 
             var presences = await _context.Presences
                 .Include(p => p.Presence_SubjectsHour)
-                .Where(p => p.Presence_Student_Id == student.Student_Id)
+                .Where(p => p.Presence_Student_Id == student.Student_Id && p.Presence_ProofAbsence_Id == null)
                 .ToListAsync();
 
             var total_Present = presences.Count(p => p.Presence_Is);

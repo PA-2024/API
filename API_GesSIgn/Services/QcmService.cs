@@ -9,6 +9,9 @@ namespace API_GesSIgn.Services
     public interface IQcmService
     {
         Task<QCMDto> GetQCMByIdAsync(int id);
+        Task<Student> GetStudentByIdAsync(int id);
+        Task<QCM> GetQCMById(int id);
+        Task AddAnswer(HashSet<int> answer, Student student, int idqcm, int idquestion);
     }
 
     public class QcmService : IQcmService
@@ -20,7 +23,13 @@ namespace API_GesSIgn.Services
             _context = context;
         }
 
-        public async Task<QCMDto> GetQCMByIdAsync(int id)
+        public async Task<QCM> GetQCMById(int id)
+        {
+            var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
+            return qcm;
+        }
+
+            public async Task<QCMDto> GetQCMByIdAsync(int id)
         {
             var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
 
@@ -49,6 +58,31 @@ namespace API_GesSIgn.Services
             };
 
             return qcmDto;
+        }
+
+        public async Task<Student> GetStudentByIdAsync(int id)
+        {
+            return await _context.Students.FirstOrDefaultAsync(s => s.Student_Id == id);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="answer"></param>
+        /// <param name="student"></param>
+        /// <param name="idqcm"></param>
+        /// <param name="idquestion"></param>
+        public async Task AddAnswer(HashSet<int> answer, Student student, int idqcm, int idquestion)
+        {
+            AnswerQCM answerQCM = new AnswerQCM();
+            answerQCM.AnswerQCM_Answer = string.Join(",", answer);
+            answerQCM.AnswerQCM_Student = student;
+            answerQCM.AnswerQCM_QCM_Id = idqcm;
+            answerQCM.AnswerQCM_Question_Id = idquestion;
+            _context.AnswerQCM.Add(answerQCM);
+            await _context.SaveChangesAsync();
+
         }
     }
 }

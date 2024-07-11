@@ -120,6 +120,8 @@ namespace API_GesSIgn.Services
 
                     string studentId = parsedMessage.studentId;
                     string studentName = parsedMessage.studentName;
+                    
+
                     var findStudent = qcm.Students.Find(s => s.Student_Id == studentId);
 
                     if (findStudent != null)
@@ -132,7 +134,9 @@ namespace API_GesSIgn.Services
                     else
                     {
                         var student = new StudentQcm(studentId, studentName);
-                        student.webSocket = webSocket; // Assign the WebSocket to the student
+                        var stud = await qcmService.GetStudentByIdAsync(Convert.ToInt32(studentId));
+                        student.webSocket = webSocket; 
+                        student.student = stud;
                         qcm.Students.Add(student);
                         Console.WriteLine($"Student {studentName} (ID: {studentId}) joined QCM {qcm.Id}");
                         var startMessage = new { action = "CONNECT", message = "joined QCM" };
@@ -144,7 +148,7 @@ namespace API_GesSIgn.Services
                 }
                 else if (action == "ANSWER")
                 {
-                    await CheckAnswer(webSocket, qcm, parsedMessage);
+                    await CheckAnswer(webSocket, qcm, parsedMessage, qcmService);
                 }
                 else if (action == "START")
                 {
@@ -181,7 +185,7 @@ namespace API_GesSIgn.Services
         /// <param name="qcm"></param>
         /// <param name="parsedMessage"></param>
         /// <returns></returns>
-        private async Task CheckAnswer(WebSocket webSocket, CurrentQCM qcm, dynamic parsedMessage)
+        private async Task CheckAnswer(WebSocket webSocket, CurrentQCM qcm, dynamic parsedMessage, IQcmService qcmService)
         {
             try
             {
@@ -206,6 +210,7 @@ namespace API_GesSIgn.Services
                         }
                         var feedback = new { result = isCorrect ? "Correct" : "Incorrect" };
                         await SendMessage(webSocket, feedback);
+                        await qcmService.AddAnswer(studentAnswers, student.student, Convert.ToInt32(qcm.Id), qcm.CurrentQuestionIndex);
                     }
                 }
             }
