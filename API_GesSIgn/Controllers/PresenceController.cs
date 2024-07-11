@@ -252,7 +252,16 @@ namespace API_GesSIgn.Controllers
                     .FirstOrDefaultAsync();
                 if (p == null)
                 {
-                    return StatusCode(500, "Error, Student no have a Presences");
+                    // si l'étudiant ne possede pas de presence, on en crée une
+                    Presence presence = new Presence
+                    {
+                        Presence_Student_Id = student.StudentSubject_Student.Student_Id,
+                        Presence_SubjectsHour_Id = id,
+                        Presence_Is = false
+                    };
+                    _context.Presences.Add(presence);
+                    await _context.SaveChangesAsync();
+                    p = presence;
                 }
                 add.Student_User = UserSimplifyDto.FromUser(p.Presence_Student.Student_User);
                 add.IsPresent = p.Presence_Is;
