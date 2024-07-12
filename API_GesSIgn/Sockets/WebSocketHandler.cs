@@ -7,6 +7,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using API_GesSIgn.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace API_GesSIgn.Sockets
 {
@@ -96,38 +98,81 @@ namespace API_GesSIgn.Sockets
                     await SendMessage(webSocket, "Invalid token or subjectHourId.");
                 }
             }
+            /// partie etudiante
             else if (parts.Length == 3 && parts[0] == "validate")
             {
-                try 
+                try
                 {
                     int subjectHourId = int.Parse(parts[1]);
                     int studentId = int.Parse(parts[2]);
-    
-                    using (var scope = _serviceProvider.CreateScope())
+                    var code = parts[3];
+                    Console.WriteLine(code);
+
+                    if (_rooms.TryGetValue(subjectHourId.ToString(), out var room) && room.code == code)
                     {
-                        var context = scope.ServiceProvider.GetRequiredService<MonDbContext>();
-    
-                        var presence = context.Presences
-                            .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
-    
-                        if (presence != null)
-                        {
-                            presence.Presence_Is = true;
-                            presence.Presence_ScanDate = DateTime.UtcNow;
-                            presence.Presence_ScanInfo = message;
-                            context.Presences.Update(presence);
-                            await context.SaveChangesAsync();
-                            await SendMessage(webSocket, "Invalid token or subjectHourId.");
-                        }
-                        else 
-                        {
-                            await SendMessage(webSocket, "ERROR, please contact support");
-                        }
+                        Console.WriteLine(room.code);
+                        await ValidatePresence(webSocket, subjectHourId, studentId);
+                    }
+                    else
+                    {
+                        if (room.code == code)
+                            await SendMessage(webSocket, "Qr pas encore affiché");
+                        else
+                            await SendMessage(webSocket, "Qr code invalide, veuillez ressayer");
                     }
                 }
-                catch (Exception e) 
+                catch (Exception e)
                 {
-                    Console.WriteLine("ERROR"); // TODO A CHANGER 
+                    Console.WriteLine("ERROR");
+                }
+            }
+        }
+
+        private async Task ValidatePresence(WebSocket webSocket, int subjectHourId, int studentId)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<MonDbContext>();
+
+                var presence = context.Presences
+                    .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
+
+                if (presence != null)
+                {
+                    presence.Presence_Is = true;
+                    presence.Presence_ScanDate = DateTime.UtcNow;
+                    presence.Presence_ScanInfo = "Scan QR-Code";
+                    context.Presences.Update(presence);
+                    await context.SaveChangesAsync();
+                    await SendMessage(webSocket, "Presence validé");
+                }
+                else // Cela ne doit jamais arriver mais en securité 
+                {
+                    var subjectHour = context.SubjectsHour
+                        .Include(s => s.SubjectsHour_Subjects)
+                        .ThenInclude(s => s.Subjects_User)
+                        .FirstOrDefault(s => s.SubjectsHour_Id == subjectHourId);
+                    if (subjectHour != null)
+                    {
+                        if (context.StudentSubjects.Any(s => s.StudentSubject_StudentId == studentId && s.StudentSubject_SubjectId == subjectHour.SubjectsHour_Subjects.Subjects_Id))
+                        {
+                            Presence add = new Presence();
+                            add.Presence_Student_Id = studentId;
+                            add.Presence_SubjectsHour_Id = subjectHourId;
+                            add.Presence_Is = true;
+                            presence.Presence_ScanDate = DateTime.UtcNow;
+                            presence.Presence_ScanInfo = "Scan QR-Code";
+                        }
+                        else
+                        {
+                            await SendMessage(webSocket, "Vous n'est pas insctit a ce cours");
+                        }
+
+                    }
+                    else
+                    {
+                        await SendMessage(webSocket, "Error please contact support");
+                    }
                 }
             }
         }
@@ -139,6 +184,7 @@ namespace API_GesSIgn.Sockets
                 if (room.Sockets.TryGetValue(room.CreatorSocketId, out var creatorSocket))
                 {
                     var code = GenerateCode();
+                    room.code = code;
                     await SendMessage(creatorSocket, code);
                 }
             }
