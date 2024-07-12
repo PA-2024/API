@@ -77,6 +77,7 @@ namespace API_GesSIgn.Sockets
 
         private async Task HandleMessage(string socketId, string message, WebSocket webSocket)
         {
+            Console.WriteLine(message);
             var parts = message.Split(' ');
             if (parts.Length >= 2 && parts[0] == "createRoom")
             {

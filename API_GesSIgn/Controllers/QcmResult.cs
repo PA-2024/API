@@ -68,6 +68,32 @@ namespace API_GesSIgn.Controllers
 
             return Ok(qcm);
         }
+        /*
+        [HttpGet("AllResultsQcmForOneQcmDetails/{id}")]
+        [RoleRequirement("Eleve")]
+        public async Task<ActionResult<IEnumerable<QcmResultDetails>>> AllResultsQcmForOneQcmDetails(int id)
+        {
+            var qcm = await _context.AnswerQCM
+                .Include(q => q.AnswerQCM_Student)
+                .Where(m => m.AnswerQCM_QCM_Id == id).ToListAsync();
+
+            List<QcmResultDetails> result = new List<QcmResultDetails>();
+
+            foreach (var q in qcm)
+            {
+                var qcmResult = new QcmResultDetails
+                {
+                    QcmResult_Student = StudentSimplifyDto.FromStudent(q.AnswerQCM_Student),
+                    QcmResultDetails_Answer = q.AnswerQCM_Answer,
+                    QcmResultDetails_Question_id = q.AnswerQCM_Question_Id
+                };
+
+                result.Add(qcmResult);
+            }
+
+            return Ok(qcm);
+        }
+        */
 
     }
 }
