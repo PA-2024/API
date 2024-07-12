@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using API_GesSIgn.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Newtonsoft.Json;
 
 namespace API_GesSIgn.Sockets
 {
@@ -118,9 +119,9 @@ namespace API_GesSIgn.Sockets
                     else
                     {
                         if (room.code == code)
-                            await SendMessage(webSocket, "Qr pas encore affiché");
+                            await SendMessageJson(webSocket, new { action = "ERROR", message = "Mauvais QrCode" });
                         else
-                            await SendMessage(webSocket, "Qr code invalide, veuillez ressayer");
+                            await SendMessageJson(webSocket, new { action = "ERROR", message = "QrCode Incorrect" });
                     }
                 }
                 catch (Exception e)
@@ -146,7 +147,7 @@ namespace API_GesSIgn.Sockets
                     presence.Presence_ScanInfo = "Scan QR-Code";
                     context.Presences.Update(presence);
                     await context.SaveChangesAsync();
-                    await SendMessage(webSocket, "Presence validé");
+                    await SendMessageJson(webSocket, new { action = "VALIDATED", message = "Presence validé" });
                 }
                 else // Cela ne doit jamais arriver mais en securité 
                 {
@@ -164,16 +165,20 @@ namespace API_GesSIgn.Sockets
                             add.Presence_Is = true;
                             presence.Presence_ScanDate = DateTime.UtcNow;
                             presence.Presence_ScanInfo = "Scan QR-Code";
+                            context.Presences.Add(add);
+                            await context.SaveChangesAsync();
+                            await SendMessageJson(webSocket, new { action = "VALIDATED", message = "Presence validé" });
+
                         }
                         else
                         {
-                            await SendMessage(webSocket, "Vous n'est pas insctit a ce cours");
+                            await SendMessageJson(webSocket, new { action = "ERROR", message = "pas inscrit a ce cours, verifiez autour de vous que vous etez dans le bon cours" });
                         }
 
                     }
                     else
                     {
-                        await SendMessage(webSocket, "Error please contact support");
+                        await SendMessageJson(webSocket, new { action = "ERROR", message = "Error please contact support" });
                     }
                 }
             }
@@ -190,6 +195,13 @@ namespace API_GesSIgn.Sockets
                     await SendMessage(creatorSocket, code);
                 }
             }
+        }
+
+        private async Task SendMessageJson(WebSocket webSocket, object message)
+        {
+            var messageString = JsonConvert.SerializeObject(message);
+            var messageBytes = Encoding.UTF8.GetBytes(messageString);
+            await webSocket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
         /// <summary>
