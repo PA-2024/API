@@ -77,7 +77,7 @@ namespace API_GesSIgn.Sockets
 
         private async Task HandleMessage(string socketId, string message, WebSocket webSocket)
         {
-            Console.WriteLine(message);
+            Console.WriteLine("MESSAGE RECU :" + message);
             var parts = message.Split(' ');
             if (parts.Length >= 2 && parts[0] == "createRoom")
             {
@@ -100,14 +100,15 @@ namespace API_GesSIgn.Sockets
                 }
             }
             /// partie etudiante
-            else if (parts.Length == 3 && parts[0] == "validate")
+            else if (parts.Length > 3 && parts[0] == "validate")
             {
+                Console.WriteLine("PASSAGE DANS LA PARTIE VALIDATION");
                 try
-                {
+                { 
                     int subjectHourId = int.Parse(parts[1]);
                     int studentId = int.Parse(parts[2]);
                     var code = parts[3];
-                    Console.WriteLine(code);
+                    Console.WriteLine("CODE " + code);
 
                     if (_rooms.TryGetValue(subjectHourId.ToString(), out var room) && room.code == code)
                     {
