@@ -156,6 +156,33 @@ namespace API_GesSIgn.Controllers
             return _context.Students.Any(e => e.Student_Id == id);
         }
 
+
+        [HttpGet("GetStudentByToken/")]
+        public async Task<ActionResult<IEnumerable<StudentSimplifyDto>>> GetStudentByToken()
+        {
+            
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var student = await _context.Students
+                .Include(s => s.Student_User)
+                .Include(s => s.Student_Sectors)
+                .FirstOrDefaultAsync(s => s.Student_User_Id == userId);
+
+            if (student == null)
+            {
+                return NotFound();
+            } else
+            {
+                return Ok(StudentSimplifyDto.FromStudent(student));
+            }
+
+            
+        }
+
+        /// <summary>
+        /// Etudiant par école 
+        /// </summary>
+        /// <param name="NameClass">Option flitre par class</param>
+        /// <returns></returns>
         [HttpGet("GetStudentsSchoolByToken/")]
         public async Task<ActionResult<IEnumerable<StudentSimplifyDto>>> GetStudentsSchoolByToken(string? NameClass = null)
         {
