@@ -14,7 +14,6 @@ namespace API_GesSIgn.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [RoleRequirement("Gestion Ecole")]
     public class StudentController : ControllerBase
     {
         private readonly MonDbContext _context;
@@ -27,6 +26,7 @@ namespace API_GesSIgn.Controllers
 
         // GET: api/Student
         [HttpGet]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
@@ -44,6 +44,7 @@ namespace API_GesSIgn.Controllers
 
         // GET: api/Student/5
         [HttpGet("{id}")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
@@ -109,6 +110,7 @@ namespace API_GesSIgn.Controllers
     
 
         [HttpPut("{id}")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> PutStudent(int id, [FromBody] UpdateStudentSectorRequest request)
         {
             var student = await _context.Students.FindAsync(id);
@@ -158,6 +160,7 @@ namespace API_GesSIgn.Controllers
 
 
         [HttpGet("GetStudentByToken/")]
+        [RoleRequirement("Eleve")]
         public async Task<ActionResult<IEnumerable<StudentSimplifyDto>>> GetStudentByToken()
         {
             
@@ -184,6 +187,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="NameClass">Option flitre par class</param>
         /// <returns></returns>
         [HttpGet("GetStudentsSchoolByToken/")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<IEnumerable<StudentSimplifyDto>>> GetStudentsSchoolByToken(string? NameClass = null)
         {
             var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
