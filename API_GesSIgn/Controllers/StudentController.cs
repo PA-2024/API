@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Runtime.CompilerServices;
 using API_GesSIgn.Models.Request;
+using API_GesSIgn.Models.Response;
 
 namespace API_GesSIgn.Controllers
 {
@@ -156,7 +157,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpGet("GetStudentsSchoolByToken/")]
-        public async Task<ActionResult<IEnumerable<Student>>> GetStudentsSchoolByToken()
+        public async Task<ActionResult<IEnumerable<StudentSimplifyDto>>> GetStudentsSchoolByToken(string? NameClass = null)
         {
             var roleName = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -169,21 +170,47 @@ namespace API_GesSIgn.Controllers
                 {
                     return BadRequest("Le nom de l'école n'est pas fourni.");
                 }
-
-                var students = await _context.Students
+                List<Student> students = new List<Student>();
+                if (NameClass != null)
+                {
+                     students = await _context.Students
                     .Include(s => s.Student_User)
                     .ThenInclude(u => u.User_School)
                     .Include(s => s.Student_Sectors)
                     .Where(s => s.Student_User.User_School.School_Name == nameSchool)
                     .ToListAsync();
 
-                return Ok(students); // Ajout de cette ligne pour retourner les étudiants
+                }
+                else
+                {
+                     students = await _context.Students
+                    .Include(s => s.Student_User)
+                    .ThenInclude(u => u.User_School)
+                    .Include(s => s.Student_Sectors)
+                    .Where(s => s.Student_User.User_School.School_Name == nameSchool && s.Student_Sectors.Sectors_Name == NameClass)
+                    .ToListAsync();
+                    
+                }
+
+                List<StudentSimplifyDto> studentsSimplify = new List<StudentSimplifyDto>();
+                foreach (var student in students)
+                {
+                    if (student.Student_Sectors.Sectors_Name == NameClass)
+                    {
+                        studentsSimplify.Add(StudentSimplifyDto.FromStudent(student));
+                    }
+                }
+
+                return Ok(studentsSimplify);
+
             }
             else
             {
                 return new ObjectResult("Vous ne possédez pas les droits pour voir la liste.") { StatusCode = 403 };
             }
         }
+
+       
 
     }
 }
