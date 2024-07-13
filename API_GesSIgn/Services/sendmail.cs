@@ -6,6 +6,9 @@ using API_GesSIgn.Models;
 
 namespace Services
 {
+    /// <summary>
+    /// Classe pour envoyer des mails
+    /// </summary>
     public class SendMail
     {
         private static readonly string SmtpServer = "pro3.mail.ovh.net";
@@ -14,6 +17,13 @@ namespace Services
         private static readonly string FromEmail = "admin@gessign.com";
         private static readonly string SmtpPassword = Environment.GetEnvironmentVariable("MYAPP_PASSWORD_API_MAIL");
 
+        /// <summary>
+        /// Méthode pour envoyer un mail
+        /// </summary>
+        /// <param name="to"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
         public static int SendEmail(string to, string subject, string body)
         {
             try
@@ -48,19 +58,38 @@ namespace Services
             }
         }
 
-        public static void SendForgetPasswordEmail(string email, MonDbContext context)
+        /// <summary>
+        /// envoie mail passeword
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static int SendForgetPasswordEmail(string email, MonDbContext context)
         {
             string subject = "Reset Your Password";
             string token = GenerateResetToken(); 
-            string resetUrl = $"https://example.com/reset-password?token={token}";
+            var user = context.Users.FirstOrDefault(u => u.User_email == email);
+            if (user == null)
+            {
+                return 1;
+            }
+            string resetUrl = $"https://gesign.wstr.fr/reset-password/{user.User_Id}?token={token}";
             string body = $@"
                 <p>You have requested to reset your password. Please click the button below to reset your password.</p>
                 <a href='{resetUrl}' style='display:inline-block;padding:10px 20px;margin:10px 0;border-radius:5px;background-color:#28a745;color:#fff;text-decoration:none;'>Reset Password</a>
                 <p>If you did not request a password reset, please ignore this email.</p>";
 
-            SendEmail(email, subject, body);
+            return SendEmail(email, subject, body);
+             
         }
 
+        /// <summary>
+        /// Notification de la validation de votre mail 
+        /// </summary>
+        /// <param name="student"></param>
+        /// <param name="subjectsHour"></param>
+        /// <param name="isApproved"></param>
+        /// <param name="context"></param>
         public static void SendPresenceEmail(Student student, SubjectsHour subjectsHour, bool isApproved, MonDbContext context)
         {
             string subject = "Presence Validation";
@@ -78,10 +107,13 @@ namespace Services
         }
 
         
-
+        /// <summary>
+        /// Méthode pour générer un token de réinitialisation
+        /// </summary>
+        /// <returns></returns>
         private static string GenerateResetToken()
         {
-            // Implement your token generation logic here
+            // TODO
             return Guid.NewGuid().ToString();
         }
     }
