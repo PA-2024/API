@@ -3,6 +3,7 @@ using API_GesSIgn.Models.Request;
 using API_GesSIgn.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace API_GesSIgn.Controllers
 {
@@ -16,7 +17,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPost("CreateProofAbsence/{Presence_Id}")]
-        public async Task<ActionResult<ProofAbsence>> CreateProofAbsence(int Presence_Id, ProofAbsence proofAbsenceRequest)
+        public async Task<ActionResult<ProofAbsence>> CreateProofAbsence(int Presence_Id, [FromBody] CreateProofAbsenceRequest Request)
         {
             var presence = await _context.Presences
                 .FirstOrDefaultAsync(m => m.Presence_Id == Presence_Id && !m.Presence_Is);
@@ -25,6 +26,13 @@ namespace API_GesSIgn.Controllers
             {
                 return NotFound();
             }
+            ProofAbsence proofAbsenceRequest = new ProofAbsence
+            {
+                ProofAbsence_ReasonAbscence = Request.ProofAbsence_StudentComment,
+                ProofAbsence_UrlFile = Request.ProofAbsence_UrlFile,
+                ProofAbsence_Status = 1
+            };
+
             _context.ProofAbsences.Add(proofAbsenceRequest);
             await _context.SaveChangesAsync();
 
@@ -38,7 +46,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateProofAbsence(int id, ProofAbsenceRequest proofAbsenceRequest)
+        public async Task<ActionResult> UpdateProofAbsence(int id, [FromBody] ProofAbsenceRequest proofAbsenceRequest)
         {
             var proofAbsence = await _context.ProofAbsences
                 .FirstOrDefaultAsync(m => m.ProofAbsence_Id == id);
@@ -134,11 +142,7 @@ namespace API_GesSIgn.Controllers
             {
                 return BadRequest("School ID not found in token.");
             }
-            var studentIdClaim = User.FindFirst("StudentId")?.Value;
-            if (string.IsNullOrEmpty(studentIdClaim))
-            {
-                return BadRequest("Student ID not found in token.");
-            }
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             List<Presence> data = new List<Presence>();
 
            
@@ -149,7 +153,7 @@ namespace API_GesSIgn.Controllers
                     .Include(s => s.Presence_ProofAbsence)
                     .Include(s => s.Presence_Student)
                     .ThenInclude(s => s.Student_User)
-                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim) && s.Presence_Student_Id == Convert.ToInt32(studentIdClaim))
+                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim) && s.Presence_Student_Id == userId)
                     .ToListAsync();
 
             List<ProofAbsenceDetailsResponse> proofAbsenceDetails = new List<ProofAbsenceDetailsResponse>();

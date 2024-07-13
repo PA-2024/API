@@ -37,7 +37,7 @@ namespace API_GesSIgn.Controllers
             {
                 return BadRequest("School ID not found in token.");
             }
-            var buildings = await _context.Buildings.Include(b => b.Bulding_School).Where(b => b.Bulding_School.School_Id == Convert.ToInt32(schoolIdClaim) )  .ToListAsync();
+            var buildings = await _context.Buildings.Include(b => b.Bulding_School).Where(b => b.Bulding_School.School_Id == Convert.ToInt32(schoolIdClaim)).ToListAsync();
             return Ok(buildings);
         }
 
@@ -45,7 +45,6 @@ namespace API_GesSIgn.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBuildingDetails(int id)
         {
-
             var building = await _context.Buildings
                 .Include(b => b.Bulding_School)
                 .FirstOrDefaultAsync(b => b.Bulding_Id == id);

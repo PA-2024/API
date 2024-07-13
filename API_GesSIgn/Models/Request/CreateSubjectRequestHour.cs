@@ -27,4 +27,12 @@ namespace API_GesSIgn.Models.Request
 
         public List<int>? Presence_id { get; set; }
     }
+
+    public class CreateProofAbsenceRequest
+    {
+        public required string ProofAbsence_StudentComment { get; set; }
+
+        public string ProofAbsence_UrlFile { get; set; }
+
+    }
 }
