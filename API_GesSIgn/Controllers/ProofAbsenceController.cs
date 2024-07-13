@@ -16,6 +16,7 @@ namespace API_GesSIgn.Controllers
             _context = context;
         }
 
+        [RoleRequirement("Eleve")]
         [HttpPost("CreateProofAbsence/{Presence_Id}")]
         public async Task<ActionResult<ProofAbsence>> CreateProofAbsence(int Presence_Id, [FromBody] CreateProofAbsenceRequest Request)
         {
