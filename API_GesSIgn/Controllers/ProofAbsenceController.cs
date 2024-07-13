@@ -79,7 +79,7 @@ namespace API_GesSIgn.Controllers
         /// </summary>
         /// <returns></returns>
         [RoleRequirement("Gestion Ecole")]
-        [HttpGet]
+        [HttpGet("GetProofAbsenceAll")]
         public async Task<ActionResult<IEnumerable<ProofAbsenceDetailsResponse>>> GetProofAbsence()
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
