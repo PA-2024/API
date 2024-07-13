@@ -14,7 +14,7 @@ namespace Services
         private static readonly string FromEmail = "admin@gessign.com";
         private static readonly string SmtpPassword = Environment.GetEnvironmentVariable("MYAPP_PASSWORD_API_MAIL");
 
-        public static int SendEmail(string to, string subject, string body, MonDbContext dbContext)
+        public static int SendEmail(string to, string subject, string body)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace Services
             }
         }
 
-        public static void SendForgetPasswordEmail(string email)
+        public static void SendForgetPasswordEmail(string email, MonDbContext context)
         {
             string subject = "Reset Your Password";
             string token = GenerateResetToken(); 
@@ -61,7 +61,7 @@ namespace Services
             SendEmail(email, subject, body);
         }
 
-        public static void SendPresenceEmail(Student student, SubjectsHour subjectsHour, bool isApproved)
+        public static void SendPresenceEmail(Student student, SubjectsHour subjectsHour, bool isApproved, MonDbContext context)
         {
             string subject = "Presence Validation";
             string status = isApproved ? "approved" : "refused";
