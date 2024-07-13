@@ -10,6 +10,7 @@ using API_GesSIgn.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace API_GesSIgn.Sockets
 {
@@ -103,7 +104,6 @@ namespace API_GesSIgn.Sockets
             /// partie etudiante
             else if (parts.Length > 3 && parts[0] == "validate")
             {
-                Console.WriteLine("PASSAGE DANS LA PARTIE VALIDATION");
                 try
                 { 
                     int subjectHourId = int.Parse(parts[1]);
@@ -147,7 +147,8 @@ namespace API_GesSIgn.Sockets
                     presence.Presence_ScanInfo = "Scan QR-Code";
                     context.Presences.Update(presence);
                     await context.SaveChangesAsync();
-                    await SendMessageJson(webSocket, new { action = "VALIDATED", message = "Presence validé" });
+                    await SendMessageJson(webSocket, new { action = "VALIDATED", message = "Presence validé" }); 
+                    Console.WriteLine(new { action = "VALIDATED", message = "Presence validé" });
                 }
                 else // Cela ne doit jamais arriver mais en securité 
                 {
@@ -168,6 +169,7 @@ namespace API_GesSIgn.Sockets
                             context.Presences.Add(add);
                             await context.SaveChangesAsync();
                             await SendMessageJson(webSocket, new { action = "VALIDATED", message = "Presence validé" });
+                            Console.WriteLine(new { action = "VALIDATED", message = "Presence validé" });
 
                         }
                         else
