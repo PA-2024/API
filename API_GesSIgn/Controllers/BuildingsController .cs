@@ -18,6 +18,7 @@ namespace API_GesSIgn.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [RoleRequirement("Gestion Ecole")]
     public class BuildingsController : ControllerBase
     {
         private readonly MonDbContext _context;
@@ -31,7 +32,12 @@ namespace API_GesSIgn.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllBuildings()
         {
-            var buildings = await _context.Buildings.Include(b => b.Bulding_School).ToListAsync();
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+            var buildings = await _context.Buildings.Include(b => b.Bulding_School).Where(b => b.Bulding_School.School_Id == Convert.ToInt32(schoolIdClaim) )  .ToListAsync();
             return Ok(buildings);
         }
 
@@ -39,6 +45,7 @@ namespace API_GesSIgn.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBuildingDetails(int id)
         {
+
             var building = await _context.Buildings
                 .Include(b => b.Bulding_School)
                 .FirstOrDefaultAsync(b => b.Bulding_Id == id);

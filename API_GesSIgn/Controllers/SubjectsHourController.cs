@@ -203,6 +203,11 @@ namespace API_GesSIgn.Controllers
             {
                 return NotFound("Student not found.");
             }
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
 
             var subjectsHours = await _context.SubjectsHour
                  .Include(sh => sh.SubjectsHour_Bulding)
@@ -231,13 +236,18 @@ namespace API_GesSIgn.Controllers
         public async Task<ActionResult<IEnumerable<SubjectsHourSimplify>>> GetSubjectsHourByTeacherAndDateRange([FromQuery] DateRangeRequest dateRange)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
 
             var subjectsHours = await _context.SubjectsHour
                 .Include(sh => sh.SubjectsHour_Bulding)
                 .Include(sh => sh.SubjectsHour_Subjects)
                 .Where(sh => sh.SubjectsHour_Subjects.Subjects_User_Id == userId &&
                             sh.SubjectsHour_DateStart >= dateRange.StartDate && 
-                            sh.SubjectsHour_DateEnd <= dateRange.EndDate)
+                            sh.SubjectsHour_DateEnd <= dateRange.EndDate && sh.SubjectsHour_Bulding.Bulding_School.School_Id == Convert.ToInt32(schoolIdClaim))
                 .ToListAsync();
             try {
                 var result = subjectsHours.Select(sh => SubjectsHourSimplify.FromSubjectsHour(sh)).ToList();
