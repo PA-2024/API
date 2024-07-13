@@ -80,23 +80,77 @@ namespace API_GesSIgn.Controllers
         /// <returns></returns>
         [RoleRequirement("Gestion Ecole")]
         [HttpGet("GetProofAbsenceAll")]
-        public async Task<ActionResult<IEnumerable<ProofAbsenceDetailsResponse>>> GetProofAbsence()
+        public async Task<ActionResult<IEnumerable<ProofAbsenceDetailsResponse>>> GetProofAbsence(int? Student_id = null)
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
             if (string.IsNullOrEmpty(schoolIdClaim))
             {
                 return BadRequest("School ID not found in token.");
             }
+            List<Presence> data = new List<Presence>();
 
-            var data = await _context.Presences
-                .Include(s => s.Presence_SubjectsHour)
-                .ThenInclude(s => s.SubjectsHour_Subjects)
-                .ThenInclude(s => s.Subjects_User) //teacher 
-                .Include(s => s.Presence_ProofAbsence)
-                .Include(s => s.Presence_Student)
-                .ThenInclude(s => s.Student_User)
-                .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim))
-                .ToListAsync();
+            if (Student_id == null)
+                data = await _context.Presences
+                    .Include(s => s.Presence_SubjectsHour)
+                    .ThenInclude(s => s.SubjectsHour_Subjects)
+                    .ThenInclude(s => s.Subjects_User) //teacher 
+                    .Include(s => s.Presence_ProofAbsence)
+                    .Include(s => s.Presence_Student)
+                    .ThenInclude(s => s.Student_User)
+                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim))
+                    .ToListAsync();
+            else
+                data = await _context.Presences
+                    .Include(s => s.Presence_SubjectsHour)
+                    .ThenInclude(s => s.SubjectsHour_Subjects)
+                    .ThenInclude(s => s.Subjects_User) //teacher 
+                    .Include(s => s.Presence_ProofAbsence)
+                    .Include(s => s.Presence_Student)
+                    .ThenInclude(s => s.Student_User)
+                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim) && s.Presence_Student_Id == Student_id )
+                    .ToListAsync();
+
+            List<ProofAbsenceDetailsResponse> proofAbsenceDetails = new List<ProofAbsenceDetailsResponse>();
+
+            foreach (var item in data)
+            {
+                ProofAbsenceDetailsResponse add = ProofAbsenceDetailsResponse.FromProofAbsence(item,
+                    item.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_Name, item.Presence_SubjectsHour.SubjectsHour_DateStart,
+                    item.Presence_SubjectsHour.SubjectsHour_DateEnd, item.Presence_Student
+                    );
+                proofAbsenceDetails.Add(add);
+            }
+
+
+            return Ok(proofAbsenceDetails);
+        }
+
+        [RoleRequirement("Eleve")]
+        [HttpGet("GetProofAbsenceAll/student")]
+        public async Task<ActionResult<IEnumerable<ProofAbsenceDetailsResponse>>> GetProofAbsenceForStudent()
+        {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+            var studentIdClaim = User.FindFirst("StudentId")?.Value;
+            if (string.IsNullOrEmpty(studentIdClaim))
+            {
+                return BadRequest("Student ID not found in token.");
+            }
+            List<Presence> data = new List<Presence>();
+
+           
+            data = await _context.Presences
+                    .Include(s => s.Presence_SubjectsHour)
+                    .ThenInclude(s => s.SubjectsHour_Subjects)
+                    .ThenInclude(s => s.Subjects_User) //teacher 
+                    .Include(s => s.Presence_ProofAbsence)
+                    .Include(s => s.Presence_Student)
+                    .ThenInclude(s => s.Student_User)
+                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim) && s.Presence_Student_Id == Convert.ToInt32(studentIdClaim))
+                    .ToListAsync();
 
             List<ProofAbsenceDetailsResponse> proofAbsenceDetails = new List<ProofAbsenceDetailsResponse>();
 
