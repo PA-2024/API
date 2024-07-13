@@ -1,53 +1,88 @@
+using System;
 using System.Globalization;
+using System.Net;
 using System.Net.Mail;
 using API_GesSIgn.Models;
 
-namespace Services {
-
+namespace Services
+{
     public class SendMail
-    {  
-        public static void SendEmail(string email, string subject, string body)
+    {
+        private static readonly string SmtpServer = "pro3.mail.ovh.net";
+        private static readonly int SmtpPort = 587;
+        private static readonly bool EnableSsl = true;
+        private static readonly string FromEmail = "admin@gessign.com";
+        private static readonly string SmtpPassword = Environment.GetEnvironmentVariable("MYAPP_PASSWORD_API_MAIL");
+
+        public static int SendEmail(string to, string subject, string body, MonDbContext dbContext)
         {
-            string from = Environment.GetEnvironmentVariable("EMAIL_FROM");
-            if (from == null) 
-                throw new Exception("error");
-            string to = email;
-            MailMessage message = new MailMessage(from, to);
-            message.Subject = subject;
-            message.Body = body;
-            SmtpClient client = new SmtpClient("server"); // A CHANGER
-
-            client.UseDefaultCredentials = true;
-
             try
             {
-                client.Send(message);
+                MailMessage message = new MailMessage(FromEmail, to)
+                {
+                    Subject = subject,
+                    IsBodyHtml = true
+                };
+
+                var plainTextView = AlternateView.CreateAlternateViewFromString("This is the plain text part of the email", null, "text/plain");
+                var htmlView = AlternateView.CreateAlternateViewFromString(body, null, "text/html");
+
+                message.AlternateViews.Add(plainTextView);
+                message.AlternateViews.Add(htmlView);
+
+                using (SmtpClient client = new SmtpClient(SmtpServer, SmtpPort))
+                {
+                    client.EnableSsl = EnableSsl;
+                    client.UseDefaultCredentials = false;
+                    client.Credentials = new NetworkCredential(FromEmail, SmtpPassword);
+
+                    client.Send(message);
+                }
+
+                return 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exception caught in CreateTestMessage2(): {0}",
-                    ex.ToString());
+                Console.WriteLine($"Exception caught in SendEmail(): {ex}");
+                return 42;
             }
         }
 
-        public static void forgetPassword(string email) {
+        public static void SendForgetPasswordEmail(string email)
+        {
+            string subject = "Reset Your Password";
+            string token = GenerateResetToken(); 
+            string resetUrl = $"https://example.com/reset-password?token={token}";
+            string body = $@"
+                <p>You have requested to reset your password. Please click the button below to reset your password.</p>
+                <a href='{resetUrl}' style='display:inline-block;padding:10px 20px;margin:10px 0;border-radius:5px;background-color:#28a745;color:#fff;text-decoration:none;'>Reset Password</a>
+                <p>If you did not request a password reset, please ignore this email.</p>";
 
-            string subject = "Forget Password";
-            string body = "Your password is 1234";
-
-            string token = "1234";    
-            SendEmail(email, subject, body);    
-        }
-
-        public static void PresenceEmail(Student student, SubjectsHour subjectsHour) {
-          
-            string token = "TOKEN A FAIRE";
-            string body = token; 
-            string subject = "Validation de la Presence";
-            string email = student.Student_User.User_email;
             SendEmail(email, subject, body);
         }
-                
 
+        public static void SendPresenceEmail(Student student, SubjectsHour subjectsHour, bool isApproved)
+        {
+            string subject = "Presence Validation";
+            string status = isApproved ? "approved" : "refused";
+            string body = $@"
+                <p>Your absence justification has been {status}.</p>
+                <p>Details:</p>
+                <ul>
+                    <li>Student: {student.Student_User.User_email}</li>
+                    <li>Subject: {subjectsHour.SubjectsHour_Subjects.Subjects_Name}</li>
+                    <li>Date: {subjectsHour.SubjectsHour_DateStart}</li>
+                </ul>";
+
+            SendEmail(student.Student_User.User_email, subject, body);
+        }
+
+        
+
+        private static string GenerateResetToken()
+        {
+            // Implement your token generation logic here
+            return Guid.NewGuid().ToString();
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API_GesSIgn.Models;
+using Services;
 
 namespace API_GesSIgn.Controllers
 {
@@ -26,6 +27,7 @@ namespace API_GesSIgn.Controllers
             var errors = await _context.Errors.ToListAsync();
             return Json(errors);
         }
+
 
         // GET: Errors/Details/5
         [HttpGet("{id}")]
