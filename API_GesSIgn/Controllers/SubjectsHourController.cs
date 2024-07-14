@@ -13,7 +13,7 @@ namespace API_GesSIgn.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    
     public class SubjectsHourController : ControllerBase
     {
         private readonly MonDbContext _context;
@@ -25,6 +25,7 @@ namespace API_GesSIgn.Controllers
 
         // GET: api/SubjectsHour
         [HttpGet]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHours()
         {
             return await _context.SubjectsHour
@@ -34,6 +35,7 @@ namespace API_GesSIgn.Controllers
 
         // GET: api/SubjectsHour/5
         [HttpGet("{id}")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<SubjectsHour>> GetSubjectsHour(int id)
         {
             var subjectsHour = await _context.SubjectsHour
@@ -105,6 +107,7 @@ namespace API_GesSIgn.Controllers
 
         // PUT: api/SubjectsHour/5
         [HttpPut("{id}")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> PutSubjectsHour(int id, SubjectsHour subjectsHour)
         {
             if (id != subjectsHour.SubjectsHour_Id)
@@ -156,6 +159,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("byDateRange")]
+        [RoleRequirement("Eleve")]
         public async Task<ActionResult<IEnumerable<SubjectsHourDetailsDto>>> GetSubjectsHourByDateRange([FromQuery] DateRangeRequest dateRange)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -196,6 +200,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("byDateRange/{studentId}")]
+        [RoleRequirement("Eleve")]
         public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHourByStudentIdAndDateRange(int studentId, [FromQuery] DateRangeRequest dateRange)
         {
             var student = await _context.Students.FindAsync(studentId);
