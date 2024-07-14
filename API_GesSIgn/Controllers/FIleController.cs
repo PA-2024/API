@@ -14,14 +14,15 @@ namespace API_GesSIgn.Controllers
             _csvReaderService = csvReaderService;
         }
 
-        [HttpPost("import/{file}")]
+        [HttpPost("import")]
         [RoleRequirement("Gestion Ecole")]
-        public async Task<IActionResult> AddUser(string file)
+        public async Task<IActionResult> AddUser([FromQuery] string file)
         {
             int id_school = int.Parse(User.FindFirst("SchoolId")?.Value);
 
-            var filePath = Path.Combine("path_to_your_csv_files_directory", file);
-            var (isSuccess, message) = await _csvReaderService.ImportUsersFromCsvAsync(filePath, id_school);
+            var (isSuccess, message) = await _csvReaderService.ImportUsersFromCsvAsync(file, id_school);
+
+            Console.Write(file);
 
             if (!isSuccess)
             {

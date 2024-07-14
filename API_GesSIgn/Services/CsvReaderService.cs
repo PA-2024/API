@@ -2,40 +2,42 @@
 using Microsoft.EntityFrameworkCore;
 using API_GesSIgn.Models;
 using System.Globalization;
-using Microsoft.CodeAnalysis.Elfie.Serialization;
+using System.Net.Http;
 
 namespace API_GesSIgn.Services
 {
     public class CsvReaderService
     {
         private readonly MonDbContext _context;
+        private readonly HttpClient _httpClient;
 
-        public CsvReaderService(MonDbContext context)
+        public CsvReaderService(MonDbContext context, HttpClient httpClient)
         {
             _context = context;
+            _httpClient = httpClient;
         }
 
-        public async Task<(bool isSuccess, string message)> ImportUsersFromCsvAsync(string filePath, int id_school)
+        public async Task<(bool isSuccess, string message)> ImportUsersFromCsvAsync(string url, int id_school)
         {
-            if (!System.IO.File.Exists(filePath))
+            var csvContent = await DownloadCsvAsync(url);
+            if (string.IsNullOrEmpty(csvContent))
             {
-                return (false, "Fichier introuvable.");
+                return (false, "Impossible de télécharger le fichier CSV.");
             }
 
             var usersToAdd = new List<Student>();
 
             try
             {
-                using (var reader = new StreamReader(filePath))
+                using (var reader = new StringReader(csvContent))
                 using (var csv = new CsvHelper.CsvReader(reader, CultureInfo.InvariantCulture))
                 {
                     var records = csv.GetRecords<UserCsvModel>().ToList();
-                    var role = _context.Roles.FirstOrDefault(r => r.Role_Name == "Eleve");
-
+                    var role = await _context.Roles.FirstOrDefaultAsync(r => r.Role_Name == "Eleve");
 
                     foreach (var record in records)
                     {
-                        var classe = _context.Sectors.FirstOrDefault(c => c.Sectors_Name == record.ClassName);
+                        var classe = await _context.Sectors.FirstOrDefaultAsync(c => c.Sectors_Name == record.ClassName);
 
                         if (classe == null)
                         {
@@ -60,9 +62,9 @@ namespace API_GesSIgn.Services
                         };
                         usersToAdd.Add(newStudent);
                     }
-                   
                 }
-                 _context.Students.AddRange(usersToAdd);
+
+                _context.Students.AddRange(usersToAdd);
                 await _context.SaveChangesAsync();
 
                 return (true, $"Fichier importé avec succès. Utilisateurs ajoutés : {usersToAdd.Count}");
@@ -70,6 +72,20 @@ namespace API_GesSIgn.Services
             catch (Exception ex)
             {
                 return (false, $"Une erreur est survenue lors de l'importation : {ex.Message}");
+            }
+        }
+
+        private async Task<string> DownloadCsvAsync(string url)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch
+            {
+                return null;
             }
         }
 
