@@ -128,8 +128,9 @@ namespace API_GesSIgn.Controllers
                 .ThenInclude(s => s.Subjects_User)
                 .Include(p => p.Presence_SubjectsHour.SubjectsHour_Bulding)
                 .Where(p => p.Presence_Student_Id == student.Student_Id &&
-                            !p.Presence_Is &&
-                            p.Presence_SubjectsHour.SubjectsHour_DateEnd <= currentDateTime)
+                            p.Presence_ProofAbsence_Id == null &&  !p.Presence_Is &&
+                            p.Presence_SubjectsHour.SubjectsHour_DateEnd <= currentDateTime 
+                            )
                 .ToListAsync();
 
             var result = presences.Select(p => new SubjectsHourDetailsDto
@@ -138,8 +139,54 @@ namespace API_GesSIgn.Controllers
                 SubjectsHour_DateStart = p.Presence_SubjectsHour.SubjectsHour_DateStart,
                 SubjectsHour_DateEnd = p.Presence_SubjectsHour.SubjectsHour_DateEnd,
                 SubjectsHour_Room = p.Presence_SubjectsHour.SubjectsHour_Room,
+                Presence_id = p.Presence_Id,
                 Building = BuildingDto.FromBuilding(p.Presence_SubjectsHour.SubjectsHour_Bulding),
                 Subject = SubjectsdDto.FromSubjects(p.Presence_SubjectsHour.SubjectsHour_Subjects),
+            }).ToList();
+
+            return Ok(result);
+        }
+
+
+        /// <summary>
+        /// Méthode pour récupérer les présences ou il y a un justicafif d'abscence pour un étudiant basé sur le token.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Check")]
+        [RoleRequirement("Eleve")]
+        public async Task<ActionResult<IEnumerable<SubjectsHourDetailsDtoSUserProof>>> GetProofPresences()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var currentDateTime = DateTime.UtcNow.AddMinutes(15);
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Student_User_Id == userId);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+
+            var presences = await _context.Presences
+                .Include(p => p.Presence_ProofAbsence)
+                .Include(p => p.Presence_SubjectsHour)
+                .ThenInclude(sh => sh.SubjectsHour_Subjects)
+                .ThenInclude(s => s.Subjects_User)
+                .Include(p => p.Presence_SubjectsHour.SubjectsHour_Bulding)
+                .Where(p => p.Presence_Student_Id == student.Student_Id &&
+                            p.Presence_ProofAbsence_Id != null && !p.Presence_Is &&
+                            p.Presence_SubjectsHour.SubjectsHour_DateEnd <= currentDateTime)
+                .ToListAsync();
+
+            var result = presences.Select(p => new SubjectsHourDetailsDtoSUserProof
+            {
+                SubjectsHour_Id = p.Presence_SubjectsHour.SubjectsHour_Id,
+                SubjectsHour_DateStart = p.Presence_SubjectsHour.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = p.Presence_SubjectsHour.SubjectsHour_DateEnd,
+                SubjectsHour_Room = p.Presence_SubjectsHour.SubjectsHour_Room,
+                Presence_id = p.Presence_Id,
+                ProofAbsence =  ProofAbsenceResponse.FromProofAbsence(p.Presence_ProofAbsence),
+                Building = BuildingDto.FromBuilding(p.Presence_SubjectsHour.SubjectsHour_Bulding),
+                Subject = SubjectsdDto.FromSubjects(p.Presence_SubjectsHour.SubjectsHour_Subjects),
+                
             }).ToList();
 
             return Ok(result);

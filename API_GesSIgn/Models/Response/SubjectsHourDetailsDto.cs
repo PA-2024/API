@@ -14,9 +14,12 @@ namespace API_GesSIgn.Models.Response
         public string? SubjectsHour_Room { get; set; }
         public string? SubjectsHour_TeacherComment { get; set; }
         public required BuildingDto Building { get; set; }
+
+        public int? Presence_id { get; set; }
+
         public SubjectsdDto Subject { get; set; }
 
-        public static SubjectsHourDetailsDto FromSubjectsHour(SubjectsHour subjectsHour)
+        public static SubjectsHourDetailsDto FromSubjectsHour(SubjectsHour subjectsHour, int? Presence_id = null)
         {
             return new SubjectsHourDetailsDto
             {
@@ -27,8 +30,41 @@ namespace API_GesSIgn.Models.Response
                 SubjectsHour_TeacherComment = subjectsHour.SubjectsHour_TeacherComment,
                 Building = BuildingDto.FromBuilding(subjectsHour.SubjectsHour_Bulding),
                 Subject = SubjectsdDto.FromSubjects(subjectsHour.SubjectsHour_Subjects),
+                Presence_id = Presence_id
             };
         }   
+    }
+
+    public class SubjectsHourDetailsDtoSUserProof
+    {
+        public int SubjectsHour_Id { get; set; }
+        public DateTime SubjectsHour_DateStart { get; set; }
+        public DateTime SubjectsHour_DateEnd { get; set; }
+        public string? SubjectsHour_Room { get; set; }
+        public string? SubjectsHour_TeacherComment { get; set; }
+        public required BuildingDto Building { get; set; }
+
+        public ProofAbsenceResponse? ProofAbsence { get; set; }
+
+        public int? Presence_id { get; set; }
+
+        public SubjectsdDto Subject { get; set; }
+
+        public static SubjectsHourDetailsDtoSUserProof FromSubjectsHour(SubjectsHour subjectsHour, int Presence_id, ProofAbsence tmp)
+        {
+            return new SubjectsHourDetailsDtoSUserProof
+            {
+                SubjectsHour_Id = subjectsHour.SubjectsHour_Id,
+                SubjectsHour_DateStart = subjectsHour.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = subjectsHour.SubjectsHour_DateEnd,
+                SubjectsHour_Room = subjectsHour.SubjectsHour_Room,
+                SubjectsHour_TeacherComment = subjectsHour.SubjectsHour_TeacherComment,
+                Building = BuildingDto.FromBuilding(subjectsHour.SubjectsHour_Bulding),
+                Subject = SubjectsdDto.FromSubjects(subjectsHour.SubjectsHour_Subjects),
+                Presence_id = Presence_id,
+                ProofAbsence = ProofAbsenceResponse.FromProofAbsence(tmp)
+            };
+        }
     }
 
     public class SubjectsHourSimplify
