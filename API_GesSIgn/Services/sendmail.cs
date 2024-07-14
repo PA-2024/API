@@ -64,16 +64,10 @@ namespace Services
         /// <param name="email"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        public static int SendForgetPasswordEmail(string email, MonDbContext context)
+        public static int SendForgetPasswordEmail(string email, int user_id, string token)
         {
-            string subject = "Reset Your Password";
-            string token = GenerateResetToken(); 
-            var user = context.Users.FirstOrDefault(u => u.User_email == email);
-            if (user == null)
-            {
-                return 1;
-            }
-            string resetUrl = $"https://gesign.wstr.fr/reset-password/{user.User_Id}?token={token}";
+            string subject = "Reset Your Password";           
+            string resetUrl = $"https://gesign.wstr.fr/reset-password/{user_id}?token={token}";
             string body = $@"
                 <p>You have requested to reset your password. Please click the button below to reset your password.</p>
                 <a href='{resetUrl}' style='display:inline-block;padding:10px 20px;margin:10px 0;border-radius:5px;background-color:#28a745;color:#fff;text-decoration:none;'>Reset Password</a>
@@ -90,7 +84,7 @@ namespace Services
         /// <param name="subjectsHour"></param>
         /// <param name="isApproved"></param>
         /// <param name="context"></param>
-        public static void SendPresenceEmail(Student student, SubjectsHour subjectsHour, bool isApproved, MonDbContext context)
+        public static void SendPresenceEmail(Student student, SubjectsHour subjectsHour, bool isApproved)
         {
             string subject = "Presence Validation";
             string status = isApproved ? "approved" : "refused";
@@ -111,9 +105,8 @@ namespace Services
         /// Méthode pour générer un token de réinitialisation
         /// </summary>
         /// <returns></returns>
-        private static string GenerateResetToken()
+        public static string GenerateResetToken()
         {
-            // TODO
             return Guid.NewGuid().ToString();
         }
     }

@@ -7,6 +7,7 @@ using API_GesSIgn.Models;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Services;
 
 /* 
     Créé le : 21 May 2024
@@ -149,6 +150,36 @@ namespace API_GesSIgn.Controllers
 
             return Ok(new { Token = "Bearer " + tokenString });
 
+        }
+
+        [HttpPost("reset/")]
+        public async Task<ActionResult<User>> ResetPassword(string email)
+        {
+            var user = _context.Users.SingleOrDefault(u => u.User_email == email);
+            if (user == null)
+                return NotFound("Pas de compte asssocié à cet email.");
+            string token = SendMail.GenerateResetToken();
+            user.User_tokenReset = token;
+            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+            SendMail.SendForgetPasswordEmail(email,user.User_Id ,token);
+            return Ok("Email envoyé");
+        }
+
+
+        [HttpPost("newpassword/")]
+        public async Task<ActionResult<User>> ChangePassword(int user_id, string code, string password)
+        {
+            var user = _context.Users.SingleOrDefault(u => u.User_Id == user_id);
+            if (user == null)
+                return NotFound("Utilisateur non trouvé.");
+            if (user.User_tokenReset != code)
+                return BadRequest("Code invalide.");
+            user.User_password = password;
+            user.User_tokenReset = null;
+            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }
