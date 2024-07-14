@@ -10,9 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Deploy to Heroku Main
-        if: env.HEROKU_APP_NAME
-        uses: akhileshns/heroku-deploy@v3.12.12
+      - name: Deploy to Heroku Recette
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
@@ -24,8 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Deploy to Heroku Production
-        if: env.HEROKU_PROD_APP_NAME
-        uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: ${{ secrets.HEROKU_PROD_APP_NAME }}
