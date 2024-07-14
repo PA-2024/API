@@ -34,6 +34,6 @@ namespace API_GesSIgn.Models
 
         public string User_num { get; set; }
 
-        public string User_tokenReset { get; set; }
+        public string? User_tokenReset { get; set; }
     }
 }
