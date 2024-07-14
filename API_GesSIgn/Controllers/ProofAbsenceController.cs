@@ -31,7 +31,7 @@ namespace API_GesSIgn.Controllers
             {
                 ProofAbsence_ReasonAbscence = Request.ProofAbsence_StudentComment,
                 ProofAbsence_UrlFile = Request.ProofAbsence_UrlFile,
-                ProofAbsence_Status = 1
+                ProofAbsence_Status = 3
             };
 
             _context.ProofAbsences.Add(proofAbsenceRequest);
