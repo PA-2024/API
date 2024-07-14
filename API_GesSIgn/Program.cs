@@ -122,6 +122,8 @@ builder.Services.AddDbContext<MonDbContext>(options =>
 builder.Services.AddSingleton<WebSocketHandler>();
 builder.Services.AddSingleton<QCMWebSocketHandler>();
 builder.Services.AddScoped<IQcmService, QcmService>();
+builder.Services.AddScoped<CsvReaderService>();
+
 
 var app = builder.Build();
 

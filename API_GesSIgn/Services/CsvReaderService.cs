@@ -22,7 +22,7 @@ namespace API_GesSIgn.Services
                 return (false, "Fichier introuvable.");
             }
 
-            var usersToAdd = new List<User>();
+            var usersToAdd = new List<Student>();
 
             try
             {
@@ -35,10 +35,17 @@ namespace API_GesSIgn.Services
 
                     foreach (var record in records)
                     {
+                        var classe = _context.Sectors.FirstOrDefault(c => c.Sectors_Name == record.ClassName);
+
+                        if (classe == null)
+                        {
+                            return (false, $"Classe {record.ClassName} non trouvée.");
+                        }
+
                         var user = new User
                         {
                             User_email = record.User_email,
-                            User_password = GenerateResetToken(),
+                            User_password = GeneratePassword(),
                             User_lastname = record.User_lastname,
                             User_firstname = record.User_firstname,
                             User_num = record.User_num,
@@ -46,13 +53,16 @@ namespace API_GesSIgn.Services
                             User_School_Id = id_school
                         };
 
-                        
-
-                        usersToAdd.Add(user);
+                        var newStudent = new Student
+                        {
+                            Student_User = user,
+                            Student_Sectors = classe
+                        };
+                        usersToAdd.Add(newStudent);
                     }
+                   
                 }
-
-                _context.Users.AddRange(usersToAdd);
+                 _context.Students.AddRange(usersToAdd);
                 await _context.SaveChangesAsync();
 
                 return (true, $"Fichier importé avec succès. Utilisateurs ajoutés : {usersToAdd.Count}");
@@ -63,9 +73,8 @@ namespace API_GesSIgn.Services
             }
         }
 
-        private string GenerateResetToken()
+        private string GeneratePassword()
         {
-            // TODO
             return Guid.NewGuid().ToString();
         }
     }

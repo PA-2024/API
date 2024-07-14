@@ -1,4 +1,5 @@
 ﻿using API_GesSIgn.Models;
+using API_GesSIgn.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,16 +7,28 @@ namespace API_GesSIgn.Controllers
 {
     public class FIleController : Controller
     {
-        public IActionResult Index()
+        private readonly CsvReaderService _csvReaderService;
+
+        public FIleController(CsvReaderService csvReaderService)
         {
-            return View();
+            _csvReaderService = csvReaderService;
         }
 
-        // GET: api/User/http://localhost:5000/api/File/User/1
-        [HttpGet("User/{file}")]
-        public IActionResult AddUser(string file)
+        [HttpPost("import/{file}")]
+        [RoleRequirement("Gestion Ecole")]
+        public async Task<IActionResult> AddUser(string file)
         {
-            return Ok(new { Status = "Fichier Importé" });
+            int id_school = int.Parse(User.FindFirst("SchoolId")?.Value);
+
+            var filePath = Path.Combine("path_to_your_csv_files_directory", file);
+            var (isSuccess, message) = await _csvReaderService.ImportUsersFromCsvAsync(filePath, id_school);
+
+            if (!isSuccess)
+            {
+                return BadRequest(message);
+            }
+
+            return Ok(new { Status = message });
         }
 
         // GET: api/Classe/http://localhost:5000/api/File/User/1
