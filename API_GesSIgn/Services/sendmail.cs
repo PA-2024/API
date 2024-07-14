@@ -18,7 +18,7 @@ namespace Services
         private static readonly string SmtpPassword = Environment.GetEnvironmentVariable("MYAPP_PASSWORD_API_MAIL");
 
         /// <summary>
-        /// M�thode pour envoyer un mail
+        /// Méthode pour envoyer un mail
         /// </summary>
         /// <param name="to"></param>
         /// <param name="subject"></param>
@@ -66,15 +66,14 @@ namespace Services
         /// <returns></returns>
         public static int SendForgetPasswordEmail(string email, int user_id, string token)
         {
-            string subject = "Reset Your Password";           
-            string resetUrl = $"https://gesign.wstr.fr/reset-password/{user_id}?token={token}";
+            string subject = "Réinitialisez votre mot de passe";
+            string resetUrl = $"https://gesign.wstr.fr/views/auth/reset-password.php?user_id={user_id}&token={token}";
             string body = $@"
-                <p>You have requested to reset your password. Please click the button below to reset your password.</p>
-                <a href='{resetUrl}' style='display:inline-block;padding:10px 20px;margin:10px 0;border-radius:5px;background-color:#28a745;color:#fff;text-decoration:none;'>Reset Password</a>
-                <p>If you did not request a password reset, please ignore this email.</p>";
-
+                <p>Vous avez demandé à réinitialiser votre mot de passe. Veuillez cliquer sur le bouton ci-dessous pour réinitialiser votre mot de passe.</p>
+                <a href='{resetUrl}' style='display:inline-block;padding:10px 20px;margin:10px 0;border-radius:5px;background-color:#28a745;color:#fff;text-decoration:none;'>Réinitialiser le mot de passe</a>
+                <p>Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet e-mail.</p>";
+        
             return SendEmail(email, subject, body);
-             
         }
 
         /// <summary>
@@ -102,7 +101,7 @@ namespace Services
 
         
         /// <summary>
-        /// M�thode pour g�n�rer un token de r�initialisation
+        /// Méthode pour générer un token de réinitialisation
         /// </summary>
         /// <returns></returns>
         public static string GenerateResetToken()
