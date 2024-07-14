@@ -106,7 +106,8 @@ namespace API_GesSIgn.Controllers
                     .Include(s => s.Presence_ProofAbsence)
                     .Include(s => s.Presence_Student)
                     .ThenInclude(s => s.Student_User)
-                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim))
+                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_School_Id == int.Parse(schoolIdClaim)
+                    && s.Presence_ProofAbsence_Id != null)
                     .ToListAsync();
             else
                 data = await _context.Presences
@@ -116,7 +117,8 @@ namespace API_GesSIgn.Controllers
                     .Include(s => s.Presence_ProofAbsence)
                     .Include(s => s.Presence_Student)
                     .ThenInclude(s => s.Student_User)
-                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_Id == int.Parse(schoolIdClaim) && s.Presence_Student_Id == Student_id )
+                    .Where(s => s.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_User.User_School_Id == int.Parse(schoolIdClaim) && s.Presence_Student_Id == Student_id
+                     && s.Presence_ProofAbsence_Id != null)
                     .ToListAsync();
 
             List<ProofAbsenceDetailsResponse> proofAbsenceDetails = new List<ProofAbsenceDetailsResponse>();
