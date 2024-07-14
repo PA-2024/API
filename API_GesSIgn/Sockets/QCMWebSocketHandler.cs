@@ -258,11 +258,16 @@ namespace API_GesSIgn.Services
                 var startMessage = new { action = "INFO", message = "QCM is starting." };
                 await SendMessage(qcm.Professor.WebSocket, startMessage);
             }
+            // reset score
+            foreach (var student in qcm.Students)
+            {
+                student.Score = 0;
+            }  
             Console.WriteLine("Nombre d'étudiants: " + qcm.Students.Count);
-            await RunQCM(qcm);
+            await RunQCM(qcm, qcmService);
         }
 
-        private async Task RunQCM(CurrentQCM qcm)
+        private async Task RunQCM(CurrentQCM qcm, IQcmService qcmService)
         {
             while (qcm.CurrentQuestionIndex < qcm.Questions.Count && qcm.IsRunning)
             {
@@ -285,9 +290,18 @@ namespace API_GesSIgn.Services
 
                 qcm.CurrentQuestionIndex++;
             }
-            var endMessage = new { action = "END", message = "End of the questions" };
-            BroadcastMessage(qcm, endMessage).Wait();
-            qcm.IsRunning = false;
+            if (qcm.CurrentQuestionIndex >= qcm.Questions.Count)
+            {
+                qcm.IsRunning = false;
+                var endMessage = new { action = "END", message = "End of the questions" };
+                BroadcastMessage(qcm, endMessage).Wait();
+
+                await qcmService.SauvScore(qcm.Students, qcm.QCm_id);
+                // disconnet tout le monde
+                await CloseWebSocketConnections(qcm);
+                _qcmSessions.TryRemove(qcm.Room_id, out _);
+                Console.WriteLine($"QCM {qcm.Room_id} has ended and the session has been removed.");
+            }
         }
 
         private async Task SendRanking(CurrentQCM qcm)
