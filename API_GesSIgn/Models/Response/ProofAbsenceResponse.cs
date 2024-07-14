@@ -12,6 +12,8 @@
 
         public StudentSimplifyDto student { get; set; }
 
+        public int Presence_id { get; set; }
+
         public static ProofAbsenceDetailsResponse FromProofAbsence(Presence presence, string name, DateTime start, DateTime end, Student student)
         {
             ProofAbsenceDetailsResponse res = new ProofAbsenceDetailsResponse();
@@ -20,6 +22,7 @@
             res.SubjectHour_DateStart = start;
             res.SubjectHour_DateEnd = end;
             res.student = StudentSimplifyDto.FromStudent(student);
+            res.Presence_id = presence.Presence_Id;
             return res;
         }
 
