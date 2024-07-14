@@ -258,6 +258,14 @@ namespace API_GesSIgn.Controllers
             }
         }
 
+        [HttpGet("Class/byDateRange/{ClasseName}")]
+        [RoleRequirement(["Professeur, Gestion Ecole"])]
+        public async Task<ActionResult<IEnumerable<SubjectsHourSimplify>>> GetSubjectsHourByClassAndDateRange(string ClasseName ,[FromQuery] DateRangeRequest dateRange)
+        {
+            return Ok();
+           
+        }
+
         private bool SubjectsHourExists(int id)
         {
             return _context.SubjectsHour.Any(e => e.SubjectsHour_Id == id);

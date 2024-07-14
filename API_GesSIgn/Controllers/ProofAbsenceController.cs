@@ -37,7 +37,7 @@ namespace API_GesSIgn.Controllers
             _context.ProofAbsences.Add(proofAbsenceRequest);
             await _context.SaveChangesAsync();
 
-            presence.Presence_ProofAbsence.ProofAbsence_Id = proofAbsenceRequest.ProofAbsence_Id;
+            presence.Presence_ProofAbsence = proofAbsenceRequest;
             _context.Presences.Update(presence);
 
 
