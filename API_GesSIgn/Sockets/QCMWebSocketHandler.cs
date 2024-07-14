@@ -166,9 +166,9 @@ namespace API_GesSIgn.Services
                 else if (action == "END")
                 {
                     qcm.IsRunning = false;
-                    // TODO: AJOUTER SAUVEGARDE DES RESULTATS
 
-                    // Déconnecter tout le monde
+                    await qcmService.SauvScore(qcm.Students, qcm.QCm_id);
+                    // disconnet tout le monde
                     await CloseWebSocketConnections(qcm);
                     _qcmSessions.TryRemove(qcm.Room_id, out _);
                     Console.WriteLine($"QCM {qcm.Room_id} has ended and the session has been removed.");
@@ -195,7 +195,6 @@ namespace API_GesSIgn.Services
                 var student = qcm.Students.Find(s => s.Student_Id == studentId);
                 if (student != null)
                 {
-                    // Handle student answer
                     var question = qcm.Questions[qcm.CurrentQuestionIndex];
                     if (question != null)
                     {
@@ -258,7 +257,6 @@ namespace API_GesSIgn.Services
             {
                 var startMessage = new { action = "INFO", message = "QCM is starting." };
                 await SendMessage(qcm.Professor.WebSocket, startMessage);
-                Console.WriteLine("Sent start message to professor.");  // Log message
             }
             Console.WriteLine("Nombre d'étudiants: " + qcm.Students.Count);
             await RunQCM(qcm);
@@ -279,12 +277,10 @@ namespace API_GesSIgn.Services
 
                 // Broadcast the question to all students and professor
                 await BroadcastMessage(qcm, questionMessage);
-                Console.WriteLine("Sent question to all clients.");  // Log message
 
-                await SendPeriodicMessage(qcm, "Answer the question!", 20); // Wait 20 seconds for answers
-
+                await SendPeriodicMessage(qcm, "Answer the question!", 20); 
                 await SendRanking(qcm); 
-                await Task.Delay(10000); // Wait 10 seconds to display the ranking
+                await Task.Delay(10000); 
                 await SendPeriodicMessage(qcm, "Next question !", 3);
 
                 qcm.CurrentQuestionIndex++;
@@ -304,7 +300,6 @@ namespace API_GesSIgn.Services
             };
 
             await BroadcastMessage(qcm, rankingMessage);
-            Console.WriteLine("Sent ranking to all clients.");  // Log message
         }
 
         /// <summary>

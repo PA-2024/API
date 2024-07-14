@@ -12,6 +12,8 @@ namespace API_GesSIgn.Services
         Task<Student> GetStudentByIdAsync(int id);
         Task<QCM> GetQCMById(int id);
         Task AddAnswer(HashSet<int> answer, int student_id, int idqcm, int idquestion);
+
+        Task SauvScore(List<StudentQcm> students, int idqcm);
     }
 
     public class QcmService : IQcmService
@@ -82,6 +84,32 @@ namespace API_GesSIgn.Services
                 answerQCM.AnswerQCM_QCM_Id = idqcm;
                 answerQCM.AnswerQCM_Question_Id = idquestion;
                 _context.AnswerQCM.Add(answerQCM);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+        }
+
+        public async Task SauvScore(List<StudentQcm> students, int idqcm)
+        {
+            try
+            {
+                List<QcmResult> qcmResults = new List<QcmResult>();
+
+                foreach (StudentQcm student in students)
+                {
+                    QcmResult qcmResult = new QcmResult();
+                    qcmResult.QcmResult_Student_Id = Convert.ToInt32(student.Student_Id);
+                    qcmResult.QcmResult_QCM_Id = idqcm;
+                    qcmResult.QcmResult_Score = student.Score;
+                    qcmResults.Add(qcmResult);
+                }
+
+                _context.QcmResult.AddRange(qcmResults);
                 await _context.SaveChangesAsync();
             }
             catch (Exception e)
