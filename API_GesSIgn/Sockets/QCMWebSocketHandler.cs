@@ -207,7 +207,7 @@ namespace API_GesSIgn.Services
                         {
                             student.Score += 10;
                         }
-                        var feedback = new { result = isCorrect ? "Correct" : "Incorrect" };
+                        var feedback = new { action = "FEEDBACK",  result = isCorrect ? "Correct" : "Incorrect" };
                         await SendMessage(webSocket, feedback);
                         await qcmService.AddAnswer(studentAnswers, student.student.Student_Id, Convert.ToInt32(qcm.QCm_id), question.Id);
                     }
