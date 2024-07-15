@@ -22,6 +22,7 @@ namespace API_GesSIgn.Controllers
         {
             var qcm = await _context.QcmResult
                 .Include(q => q.QcmResult_Student)
+                .ThenInclude(q => q.Student_User)
                 .Where(m => m.QcmResult_QCM_Id == id).ToListAsync();
 
             List<QcmResultResponce> result = new List<QcmResultResponce>();
@@ -50,6 +51,7 @@ namespace API_GesSIgn.Controllers
         {
             var qcm = await _context.AnswerQCM
                 .Include(q => q.AnswerQCM_Student)
+                .ThenInclude(q => q.Student_User)
                 .Where(m => m.AnswerQCM_QCM_Id == id).ToListAsync();
 
             List<QcmResultDetails> result = new List<QcmResultDetails>();
