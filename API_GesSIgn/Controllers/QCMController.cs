@@ -179,6 +179,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("byId/{id}")]
+        [RoleRequirement(["Gestion Ecole", "Professeur"])]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmById(int id)
         {
             var tmp = await _context.QCMs
@@ -197,6 +198,22 @@ namespace API_GesSIgn.Controllers
 
             return Ok(qCMDtos);
 
+        }
+
+        [HttpDelete("DeleteQcm/{id}")]
+        [RoleRequirement(["Gestion Ecole", "Professeur"])]
+        public async Task<ActionResult> DeleteQcm(int id)
+        {
+            var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
+            if (qcm == null)
+            {
+                return NotFound();
+            }
+
+            _context.QCMs.Remove(qcm);
+            await _context.SaveChangesAsync();
+
+            return Ok("QCM supprimé");
         }
 
         private async Task<QCMDto> QcmToQcmDto(QCM? qcm)

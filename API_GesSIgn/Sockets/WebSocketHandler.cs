@@ -118,14 +118,13 @@ namespace API_GesSIgn.Sockets
                     }
                     else
                     {
-                        if (room.code == code)
-                            await SendMessageJson(webSocket, new { action = "ERROR", message = "Mauvais QrCode" });
-                        else
-                            await SendMessageJson(webSocket, new { action = "ERROR", message = "QrCode Incorrect" });
+                        Console.WriteLine(room.code);
+                        await SendMessageJson(webSocket, new { action = "ERROR", message = "QrCode Incorrect" });
                     }
                 }
                 catch (Exception e)
                 {
+                    await SendMessageJson(webSocket, new { action = "ERROR", message = e.Message });
                     Console.WriteLine("ERROR");
                 }
             }
@@ -137,6 +136,7 @@ namespace API_GesSIgn.Sockets
             {
                 var context = scope.ServiceProvider.GetRequiredService<MonDbContext>();
 
+                
                 var presence = context.Presences
                     .FirstOrDefault(p => p.Presence_Student_Id == studentId && p.Presence_SubjectsHour_Id == subjectHourId);
 
@@ -164,8 +164,8 @@ namespace API_GesSIgn.Sockets
                             add.Presence_Student_Id = studentId;
                             add.Presence_SubjectsHour_Id = subjectHourId;
                             add.Presence_Is = true;
-                            presence.Presence_ScanDate = DateTime.UtcNow;
-                            presence.Presence_ScanInfo = "Scan QR-Code";
+                            add.Presence_ScanDate = DateTime.UtcNow;
+                            add.Presence_ScanInfo = "Scan QR-Code";
                             context.Presences.Add(add);
                             await context.SaveChangesAsync();
                             await SendMessageJson(webSocket, new { action = "VALIDATED", message = "Presence validé" });

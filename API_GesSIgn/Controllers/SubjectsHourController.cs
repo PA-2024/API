@@ -25,7 +25,7 @@ namespace API_GesSIgn.Controllers
 
         // GET: api/SubjectsHour
         [HttpGet]
-        [RoleRequirement("Gestion Ecole")]
+        [RoleRequirement(["Gestion Ecole", "Professeur"])]
         public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHours()
         {
             return await _context.SubjectsHour
