@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Sockets;
 
 namespace API_GesSIgn.Sockets
 {
@@ -81,6 +82,7 @@ namespace API_GesSIgn.Sockets
         {
             Console.WriteLine("MESSAGE RECU :" + message);
             var parts = message.Split(' ');
+            
             if (parts.Length >= 2 && parts[0] == "createRoom")
             {
                 var token = parts[1];

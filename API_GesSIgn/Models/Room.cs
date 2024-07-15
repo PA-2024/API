@@ -9,6 +9,7 @@ namespace API_GesSIgn.Models
         public string CreatorSocketId { get; set; }
 
         public string code { get; set; }
+
         public ConcurrentDictionary<string, WebSocket> Sockets { get; } = new ConcurrentDictionary<string, WebSocket>();
     }
 
