@@ -179,7 +179,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [HttpGet("byId/{id}")]
-        [RoleRequirement("Gestion Ecole")]
+        [RoleRequirement(["Gestion Ecole", "Professeur"])]
         public async Task<ActionResult<IEnumerable<QCMDto>>> GetQcmById(int id)
         {
             var tmp = await _context.QCMs
@@ -201,7 +201,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpDelete("DeleteQcm/{id}")]
-        [RoleRequirement("Gestion Ecole")]
+        [RoleRequirement(["Gestion Ecole", "Professeur"])]
         public async Task<ActionResult> DeleteQcm(int id)
         {
             var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
