@@ -199,6 +199,20 @@ namespace API_GesSIgn.Controllers
 
         }
 
+        public async Task<ActionResult> DeleteQcm(int id)
+        {
+            var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
+            if (qcm == null)
+            {
+                return NotFound();
+            }
+
+            _context.QCMs.Remove(qcm);
+            await _context.SaveChangesAsync();
+
+            return Ok("QCM supprimé");
+        }
+
         private async Task<QCMDto> QcmToQcmDto(QCM? qcm)
         {
             QCMDto add = new QCMDto();
