@@ -201,6 +201,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpDelete("DeleteQcm/{id}")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult> DeleteQcm(int id)
         {
             var qcm = await _context.QCMs.FirstOrDefaultAsync(q => q.QCM_Id == id);
