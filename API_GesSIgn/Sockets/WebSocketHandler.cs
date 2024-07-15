@@ -118,10 +118,8 @@ namespace API_GesSIgn.Sockets
                     }
                     else
                     {
-                        if (room.code == code)
-                            await SendMessageJson(webSocket, new { action = "ERROR", message = "Mauvais QrCode" });
-                        else
-                            await SendMessageJson(webSocket, new { action = "ERROR", message = "QrCode Incorrect" });
+                        Console.WriteLine(room.code);
+                        await SendMessageJson(webSocket, new { action = "ERROR", message = "QrCode Incorrect" });
                     }
                 }
                 catch (Exception e)
