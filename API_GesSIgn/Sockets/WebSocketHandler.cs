@@ -126,7 +126,7 @@ namespace API_GesSIgn.Sockets
                 }
                 catch (Exception e)
                 {
-                    await SendMessageJson(webSocket, new { action = "ERROR", message = "Erreurs" });
+                    await SendMessageJson(webSocket, new { action = "ERROR", message = e.Message });
                     Console.WriteLine("ERROR");
                 }
             }
