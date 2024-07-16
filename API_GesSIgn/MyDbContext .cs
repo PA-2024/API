@@ -47,7 +47,7 @@ public class MonDbContext : DbContext
     public DbSet<Roles> Roles { get; set; }
     public DbSet<StudentSubject> StudentSubjects { get; set; }
 
-
+    /*
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString = Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING");
@@ -57,7 +57,7 @@ public class MonDbContext : DbContext
             throw new InvalidOperationException("La chaîne de connexion n'est pas définie dans les variables d'environnement.");
         }
         optionsBuilder.UseSqlServer(connectionString);
-    }
+    }*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

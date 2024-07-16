@@ -115,8 +115,19 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddDbContext<MonDbContext>(options =>
-    options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
+//builder.Services.AddDbContext<MonDbContext>(options =>
+//    options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
+
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<MonDbContext>(options =>
+        options.UseInMemoryDatabase("TestDatabase"));
+}
+else
+{
+    builder.Services.AddDbContext<MonDbContext>(options =>
+        options.UseSqlServer(Environment.GetEnvironmentVariable("MYAPP_CONNECTION_STRING")));
+}
 
 // Register WebSocketHandler as singleton
 builder.Services.AddSingleton<WebSocketHandler>();
