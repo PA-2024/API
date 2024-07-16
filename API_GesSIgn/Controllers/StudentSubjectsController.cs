@@ -20,6 +20,7 @@ public class StudentSubjectsController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
+    [RoleRequirement("Gestion Ecole")]
     public async Task<IActionResult> AddStudentToSubject([FromBody] StudentSubjectRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,6 +42,25 @@ public class StudentSubjectsController : ControllerBase
         _context.StudentSubjects.Add(studentSubject);
         await _context.SaveChangesAsync();
 
+        var sh = await _context.SubjectsHour
+                .Include(s => s.SubjectsHour_Subjects)
+                .Where(s => s.SubjectsHour_Subjects.Subjects_Id == request.Subject_Id && s.SubjectsHour_DateStart > DateTime.Now.AddDays(-1))
+                .ToListAsync();
+        if (sh.Count > 0)
+        {
+            List<Presence> presences  = new List<Presence>();
+            foreach (var s in sh)
+            {
+                var presence = new List<Presence>();
+                presences.Add(new Presence
+                {
+                    Presence_Student_Id = request.Student_Id,
+                    Presence_SubjectsHour_Id = s.SubjectsHour_Id,
+                });
+            }
+            _context.Presences.AddRange(presences);
+            await _context.SaveChangesAsync();
+        }
 
         return StatusCode(201); 
     }
@@ -51,6 +71,7 @@ public class StudentSubjectsController : ControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost("List")]
+    [RoleRequirement("Gestion Ecole")]
     public async Task<IActionResult> AddStudentsToSubject([FromBody] AddStudentsToSubjectRequest request)
     {
         if (!ModelState.IsValid)
@@ -75,6 +96,29 @@ public class StudentSubjectsController : ControllerBase
         }
         _context.StudentSubjects.AddRange(studentSubjects);
         await _context.SaveChangesAsync();
+
+        var sh = await _context.SubjectsHour
+               .Include(s => s.SubjectsHour_Subjects)
+               .Where(s => s.SubjectsHour_Subjects.Subjects_Id == request.Subject_Id && s.SubjectsHour_DateStart > DateTime.Now.AddDays(-1))
+               .ToListAsync();
+        if (sh.Count > 0)
+        {
+            List<Presence> presences = new List<Presence>();
+            foreach (var s in sh)
+            {
+                var presence = new List<Presence>();
+                foreach (var studentId in request.StudentIds)
+                {
+                    presences.Add(new Presence
+                    {
+                        Presence_Student_Id = studentId,
+                        Presence_SubjectsHour_Id = s.SubjectsHour_Id,
+                    });
+                }
+            }
+            _context.Presences.AddRange(presences);
+            await _context.SaveChangesAsync();
+        }
 
 
         return StatusCode(201);
