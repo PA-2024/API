@@ -37,7 +37,7 @@ namespace API_GesSIgn.Services
 
                     foreach (var record in records)
                     {
-                        var classe = await _context.Sectors.FirstOrDefaultAsync(c => c.Sectors_Name == record.ClassName);
+                        var classe = await _context.Sectors.Where(sc => sc.Sectors_School_Id == id_school).FirstOrDefaultAsync(c => c.Sectors_Name == record.ClassName);
 
                         if (classe == null)
                         {
