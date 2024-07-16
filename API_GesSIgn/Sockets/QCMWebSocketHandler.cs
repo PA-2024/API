@@ -283,9 +283,9 @@ namespace API_GesSIgn.Services
                 // Broadcast the question to all students and professor
                 await BroadcastMessage(qcm, questionMessage);
 
-                await SendPeriodicMessage(qcm, "Answer the question!", 20); 
+                await SendPeriodicMessage(qcm, "Answer the question!", 15); 
                 await SendRanking(qcm); 
-                await Task.Delay(10000); 
+                await Task.Delay(7000); 
                 await SendPeriodicMessage(qcm, "Next question !", 3);
 
                 qcm.CurrentQuestionIndex++;
