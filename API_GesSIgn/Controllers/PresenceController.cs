@@ -225,6 +225,7 @@ namespace API_GesSIgn.Controllers
             {
                 SubjectsHour_Id = p.Presence_SubjectsHour.SubjectsHour_Id,
                 SubjectsHour_DateStart = p.Presence_SubjectsHour.SubjectsHour_DateStart,
+                SubjectsHour_DateEnd = p.Presence_SubjectsHour.SubjectsHour_DateEnd,
                 StudentIsPresent = p.Presence_Is,
                 SubjectsHour_Subject = SubjectsdDto.FromSubjects(p.Presence_SubjectsHour.SubjectsHour_Subjects),
             }).ToList();

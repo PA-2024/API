@@ -21,5 +21,14 @@ namespace API_GesSIgn.Models
         [Required]
         [DefaultValue(false)]
         public bool Error_Solved { get; set; }
+
+        public Error(string Error_Funtion, DateTime Error_DateTime, string Error_Description, bool Error_Solved)
+        {
+            this.Error_Funtion = Error_Funtion;
+            this.Error_DateTime = Error_DateTime;
+            this.Error_Description = Error_Description;
+            this.Error_Solved = Error_Solved;
+        }
+
     }
 }
