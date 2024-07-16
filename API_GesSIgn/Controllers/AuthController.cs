@@ -114,7 +114,7 @@ namespace API_GesSIgn.Controllers
         /// <param name="login"></param>
         /// <returns></returns>
         [HttpPost("student/login")]
-        public IActionResult StudentLogin([FromBody] LoginRequest login)
+        public async Task<IActionResult> StudentLoginAsync([FromBody] LoginRequest login)
         {
             var user = _context.Users
                 .Include(u => u.User_Role)
@@ -125,30 +125,40 @@ namespace API_GesSIgn.Controllers
             if (user == null)
                 return Unauthorized();
 
-            var student = _context.Students
-                .FirstOrDefault(s => s.Student_User.User_Id == user.User_Id);
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
-            var tokenDescriptor = new SecurityTokenDescriptor
+            try
             {
-                Subject = new ClaimsIdentity(new Claim[]
+                var student = _context.Students
+                    .FirstOrDefault(s => s.Student_User.User_Id == user.User_Id);
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes("VotreCléSécrèteSuperSécuriséeDe32CaractèresOuPlus");
+                var tokenDescriptor = new SecurityTokenDescriptor
                 {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
                     new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
                     new Claim(ClaimTypes.Name, user.User_firstname + " " + user.User_lastname),
                     new Claim(ClaimTypes.Role, user.User_Role.Role_Name),
                     new Claim("SchoolName", user.User_School?.School_Name ?? string.Empty),
                     new Claim("SchoolId", user.User_School?.School_Id.ToString() ?? string.Empty),
                     new Claim("Student_Id", student.Student_Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
 
-            return Ok(new { Token = "Bearer " + tokenString });
+                return Ok(new { Token = "Bearer " + tokenString });
+            }
+            catch (Exception ex)
+            {
+                Error error = new Error("SendMail", DateTime.Now, ex.Message, false);
+                _context.Errors.AddAsync(error);
+                await _context.SaveChangesAsync();
+                return BadRequest();
+            }
 
         }
 
@@ -162,7 +172,14 @@ namespace API_GesSIgn.Controllers
             user.User_tokenReset = token;
             _context.SaveChanges();
             await _context.SaveChangesAsync();
-            SendMail.SendForgetPasswordEmail(email,user.User_Id ,token);
+            int res = SendMail.SendForgetPasswordEmail(email,user.User_Id ,token);
+            if (res == 42) 
+            {
+                Error error = new Error("SendMail", DateTime.Now, "Erreur dans l'envoie du mail", false);
+                _context.Errors.AddAsync(error);
+                await _context.SaveChangesAsync();
+                return BadRequest("Erreur lors de l'envoi de l'email.");
+            }
             return Ok("Email envoyé");
         }
 
