@@ -120,7 +120,6 @@ namespace API_GesSIgn.Sockets
                     }
                     else
                     {
-                        Console.WriteLine(room.code);
                         await SendMessageJson(webSocket, new { action = "ERROR", message = "QrCode Incorrect" });
                     }
                 }
