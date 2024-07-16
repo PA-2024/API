@@ -41,7 +41,8 @@ public class StudentSubjectsController : ControllerBase
         _context.StudentSubjects.Add(studentSubject);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetStudentSubject", new { studentId = studentSubject.StudentSubject_StudentId, subjectId = studentSubject.StudentSubject_SubjectId }, studentSubject);
+
+        return StatusCode(201); 
     }
 
     /// <summary>
