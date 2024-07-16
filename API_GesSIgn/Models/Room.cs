@@ -10,6 +10,8 @@ namespace API_GesSIgn.Models
 
         public string code { get; set; }
 
+        public int StudentCount { get; set; }
+
         public ConcurrentDictionary<string, WebSocket> Sockets { get; } = new ConcurrentDictionary<string, WebSocket>();
     }
 

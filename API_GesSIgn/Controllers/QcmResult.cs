@@ -25,6 +25,8 @@ namespace API_GesSIgn.Controllers
             var qcm = await _context.QcmResult
                 .Include(q => q.QcmResult_Student)
                 .ThenInclude(q => q.Student_User)
+                .Include(q => q.QcmResult_Student)
+                .ThenInclude(q => q.Student_Sectors)
                 .Where(m => m.QcmResult_QCM_Id == id).ToListAsync();
 
             List<QcmResultResponce> result = new List<QcmResultResponce>();
@@ -53,6 +55,8 @@ namespace API_GesSIgn.Controllers
             var qcm = await _context.QcmResult
                 .Include(q => q.QcmResult_Student)
                 .ThenInclude(q => q.Student_User)
+                .Include(q => q.QcmResult_Student)
+                .ThenInclude(q => q.Student_Sectors)
                 .Where(m => m.QcmResult_QCM_Id == id && m.QcmResult_Student.Student_User.User_Id == Convert.ToInt32(userid)).ToListAsync();
 
             List<QcmResultResponce> result = new List<QcmResultResponce>();
