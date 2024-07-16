@@ -16,7 +16,7 @@ namespace API_GesSIgn.Controllers
         }
 
         [HttpGet]
-        [RoleRequirement("Gestion Eleve")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> GetAllSectors()
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
@@ -41,7 +41,7 @@ namespace API_GesSIgn.Controllers
 
         // GET: Sectors/Details/5
         [HttpGet("{id}")]
-        [RoleRequirement("Gestion Eleve")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> GetSectorDetails(int id)
         {
             var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
@@ -69,7 +69,7 @@ namespace API_GesSIgn.Controllers
 
         // POST: Sectors/Create
         [HttpPost]
-        [RoleRequirement("Gestion Eleve")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> CreateSector([FromBody] Sectors sector)
         {
             if (!ModelState.IsValid)
@@ -92,7 +92,7 @@ namespace API_GesSIgn.Controllers
 
         // PUT: Sectors/Edit/5
         [HttpPut("{id}")]
-        [RoleRequirement("Gestion Eleve")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> UpdateSector(int id, [FromBody] Sectors sector)
         {
             if (id != sector.Sectors_Id)
@@ -128,7 +128,7 @@ namespace API_GesSIgn.Controllers
 
         // DELETE: Sectors/Delete/5
         [HttpDelete("{id}")]
-        [RoleRequirement("Gestion Eleve")]
+        [RoleRequirement("Gestion Ecole")]
         public async Task<IActionResult> DeleteSector(int id)
         {
             var sector = await _context.Sectors.FindAsync(id);
