@@ -22,6 +22,7 @@ namespace API_GesSIgn.Controllers
         [HttpGet("AllResultsQcmForOneQcm/{id}")]
         public async Task<ActionResult<IEnumerable<QcmResultResponce>>> AllResultsQcmForOneQcm(int id)
         {
+            
             var qcm = await _context.QcmResult
                 .Include(q => q.QcmResult_Student)
                 .ThenInclude(q => q.Student_User)
