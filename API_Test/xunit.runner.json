@@ -1,0 +1,5 @@
+{
+  "environment": {
+    "ASPNETCORE_ENVIRONMENT": "Testing"
+  }
+}
