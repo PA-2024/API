@@ -24,10 +24,18 @@ namespace API_GesSIgn.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Presence>>> GetPresences()
         {
+
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             return await _context.Presences
                 .Include(p => p.Presence_Student)
                 .Include(p => p.Presence_SubjectsHour)
                 .ThenInclude(sh => sh.SubjectsHour_Subjects)
+                .Where(p => p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim))
                 .ToListAsync();
         }
 
