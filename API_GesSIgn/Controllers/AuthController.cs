@@ -154,7 +154,7 @@ namespace API_GesSIgn.Controllers
             }
             catch (Exception ex)
             {
-                Error error = new Error("SendMail", DateTime.Now, ex.Message, false);
+                Error error = new Error("StudentLoginAsync", DateTime.Now, ex.Message, false);
                 _context.Errors.AddAsync(error);
                 await _context.SaveChangesAsync();
                 return BadRequest();
