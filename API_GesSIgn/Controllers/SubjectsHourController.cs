@@ -28,8 +28,15 @@ namespace API_GesSIgn.Controllers
         [RoleRequirement(["Gestion Ecole", "Professeur"])]
         public async Task<ActionResult<IEnumerable<SubjectsHour>>> GetSubjectsHours()
         {
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
+
             return await _context.SubjectsHour
                 .Include(s => s.SubjectsHour_Subjects)
+                .Where(s => s.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim))
                 .ToListAsync();
         }
 
@@ -38,8 +45,15 @@ namespace API_GesSIgn.Controllers
         [RoleRequirement("Gestion Ecole")]
         public async Task<ActionResult<SubjectsHour>> GetSubjectsHour(int id)
         {
+
+            var schoolIdClaim = User.FindFirst("SchoolId")?.Value;
+            if (string.IsNullOrEmpty(schoolIdClaim))
+            {
+                return BadRequest("School ID not found in token.");
+            }
             var subjectsHour = await _context.SubjectsHour
                 .Include(s => s.SubjectsHour_Subjects)
+                .Where(s => s.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim))
                 .FirstOrDefaultAsync(s => s.SubjectsHour_Id == id);
 
             if (subjectsHour == null)
