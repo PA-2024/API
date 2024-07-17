@@ -35,7 +35,8 @@ namespace API_GesSIgn.Controllers
                 .Include(p => p.Presence_Student)
                 .Include(p => p.Presence_SubjectsHour)
                 .ThenInclude(sh => sh.SubjectsHour_Subjects)
-                .Where(p => p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim))
+                .Where(p => p.Presence_SubjectsHour.SubjectsHour_Subjects.Subjects_School_Id == int.Parse(schoolIdClaim) 
+                && p.Presence_SubjectsHour.SubjectsHour_DateEnd <= DateTime.UtcNow.AddMinutes(15))
                 .ToListAsync();
         }
 
